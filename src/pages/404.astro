@@ -1,10 +1,25 @@
 ---
+// GitHub Pages serves dist/404.html for any path that does not exist.
 import Base from "../layouts/Base.astro";
+import { CONTEM_URL, FEEDS_URL } from "../lib/config";
 ---
 
 <Base title="Página não encontrada" noindex>
-  <h1>Página não encontrada</h1>
-  <p class="lead">
-    Este site tem uma página só. <a href="/">Voltar ao início</a>.
+  <h1>Não achei</h1>
+  <p class="lead">Este endereço não existe aqui. O que tem:</p>
+  <ul>
+    <li>
+      <a href="/">Início</a>: busca, o que mudou hoje, os quatro sites.
+    </li>
+    <li>
+      <a href="/dados/">Dados</a>: as tabelas em Parquet.
+    </li>
+    <li>
+      <a href="/sobre/">Sobre</a>: o que cada site faz.
+    </li>
+  </ul>
+  <p class="nota">
+    Procurando um produto? Fica no <a href={CONTEM_URL}>contém</a>. Uma fila ou um preço? No{" "}
+    <a href={FEEDS_URL}>anvisa.feeds</a>.
   </p>
 </Base>
