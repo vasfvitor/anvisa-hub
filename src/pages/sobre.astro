@@ -1,22 +1,61 @@
 ---
-// What each site is, what it leaves out. One short section per site.
+// What each site is, what it leaves out, and the questions people arrive with. The FAQ is visible text
+// and the same text as FAQPage JSON-LD.
 import Base from "../layouts/Base.astro";
 import { ANVISA_CONSULTAS_URL, ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL } from "../lib/config";
 import { AUTHOR } from "../lib/brand";
 
-const description = "O que cada site faz e o que fica de fora: contém, anvisa.feeds, preços CMED e as tabelas.";
+const title = "Sobre os sites";
+const description =
+  "O que cada site faz e o que fica de fora: contém (produtos regularizados), anvisa.feeds (filas de análise), preços CMED (lista mensal) e as tabelas em Parquet. Dados públicos da ANVISA, sem alteração.";
+const site = Astro.site!.href;
+const faq = [
+  {
+    q: "Como saber se um produto está liberado na ANVISA?",
+    a: `Busque no contém (${CONTEM_URL}) pela marca, nome, empresa ou CNPJ. Ele cobre alimentos e suplementos, saneantes e cosméticos, com a situação e as datas de cada regularização. Medicamentos e dispositivos ainda não estão na busca.`,
+  },
+  {
+    q: "Como acompanhar a fila de análise de um processo?",
+    a: `Em anvisa.feeds (${FEEDS_URL}) cada subfila tem uma página com a fila inteira e um feed Atom. Assine o feed da sua subfila e filtre pelo número do processo; as entradas dizem quem entrou, saiu ou mudou de posição a cada dia.`,
+  },
+  {
+    q: "Onde ver o preço máximo de um medicamento?",
+    a: `Em ${FEEDS_URL}cmed/, por substância ou por laboratório: PF, PMC e PMVG à alíquota 0 % e o que mudou contra a lista anterior. São os tetos da CMED, não o preço praticado.`,
+  },
+  {
+    q: "Os dados são oficiais?",
+    a: `São os arquivos públicos da ANVISA (dados.anvisa.gov.br e a API Consultas Externas), republicados sem alteração e com a data de cada coleta. O site não tem vínculo com a ANVISA e não substitui a consulta oficial em ${ANVISA_CONSULTAS_URL}.`,
+  },
+];
+const structured = [
+  {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: site },
+      { "@type": "ListItem", position: 2, name: "Sobre" },
+    ],
+  },
+  {
+    "@type": "FAQPage",
+    mainEntity: faq.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  },
+];
 ---
 
-<Base title="Sobre" description={description}>
+<Base title={title} description={description} structured={structured}>
   <div class="sobre">
-    <h1>Sobre</h1>
+    <h1>{title}</h1>
     <p class="lead">Quatro sites, um dado cada, lidos dos arquivos públicos da ANVISA e republicados sem alteração.</p>
 
     <h2>contém</h2>
     <section>
       <p>
-        <a href={CONTEM_URL}>contem.abelhaninja.de</a>: produtos regularizados, por marca, nome, empresa, CNPJ ou número
-        do rótulo. Alimentos e suplementos, saneantes, cosméticos. Uma página por empresa.
+        <a href={CONTEM_URL}>contem.abelhaninja.de</a> responde se um produto está regularizado: alimentos e
+        suplementos, saneantes, cosméticos, por marca, nome, empresa, CNPJ ou número do rótulo. Uma página por empresa.
       </p>
       <p class="muted">
         Fora: medicamentos e dispositivos, por enquanto. A busca precisa de JavaScript; as páginas de empresa não.
@@ -26,8 +65,8 @@ const description = "O que cada site faz e o que fica de fora: contém, anvisa.f
     <h2>anvisa.feeds</h2>
     <section>
       <p>
-        <a href={FEEDS_URL}>anvisa.feeds.abelhaninja.de</a>: as filas de análise de petições, uma por subfila, como feed
-        Atom. Uma coleta por dia; cada entrada diz quem entrou, saiu ou mudou de posição.
+        <a href={FEEDS_URL}>anvisa.feeds.abelhaninja.de</a> mostra as filas de análise de petições, uma por subfila,
+        como feed Atom. Uma coleta por dia; cada entrada diz quem entrou, saiu ou mudou de posição.
       </p>
       <p class="muted">Fora: o resultado da análise. "Saiu da fila" não diz se foi deferido.</p>
     </section>
@@ -35,8 +74,8 @@ const description = "O que cada site faz e o que fica de fora: contém, anvisa.f
     <h2>preços CMED</h2>
     <section>
       <p>
-        <a href={`${FEEDS_URL}cmed/`}>anvisa.feeds.abelhaninja.de/cmed</a>: a lista mensal de preços máximos de
-        medicamentos, comparada com a anterior. Um feed por substância e por laboratório.
+        <a href={`${FEEDS_URL}cmed/`}>anvisa.feeds.abelhaninja.de/cmed</a> compara a lista mensal de preços máximos de
+        medicamentos com a anterior. Um feed por substância e por laboratório.
       </p>
       <p class="muted">Fora: preço praticado. São tetos. Em março ou abril a lista inteira muda.</p>
     </section>
@@ -48,6 +87,16 @@ const description = "O que cada site faz e o que fica de fora: contém, anvisa.f
         convertidos todo dia, com manifest, dicionário e hash. É o que alimenta os outros três. A lista está em{" "}
         <a href="/dados/">Dados</a>.
       </p>
+    </section>
+
+    <h2>Perguntas</h2>
+    <section>
+      {faq.map((f) => (
+        <>
+          <h3>{f.q}</h3>
+          <p>{f.a}</p>
+        </>
+      ))}
     </section>
 
     <h2>Limites</h2>

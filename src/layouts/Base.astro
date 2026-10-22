@@ -3,7 +3,7 @@
 // site nav, footer with the repositories. No client JavaScript anywhere on the site.
 // Astro drops a line break between text and a tag: keep inline links on the same line as their text.
 import Logo from "../components/Logo.astro";
-import { HOME_URL, REPOS } from "../lib/config";
+import { CONTEM_URL, HOME_URL, REPOS } from "../lib/config";
 import { AUTHOR, DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
 
 interface Props {
@@ -34,6 +34,12 @@ const graph = {
       description: DESCRIPTION,
       inLanguage: "pt-BR",
       publisher: { "@id": `${site}#org` },
+      // the home's search box: a GET to contém with ?q=
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${CONTEM_URL}?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
     },
     {
       "@type": "Organization",
@@ -57,7 +63,14 @@ const graph = {
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fbf8ef" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)" />
-    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {noindex ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <>
+        <link rel="canonical" href={canonical} />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+      </>
+    )}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta property="og:type" content="website" />
@@ -81,9 +94,8 @@ const graph = {
       Ir para o conteúdo
     </a>
     <header class="site">
-      <a class="mark" href="/" aria-label={NAME}>
+      <a class="mark" href="/" aria-label="Início">
         <Logo />
-        <span>{NAME}</span>
       </a>
       <nav aria-label="Seções">
         <a href="/" aria-current={current("/")}>
@@ -204,8 +216,8 @@ const graph = {
     font-weight: 600;
   }
   header.site .mark svg {
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
   }
   header.site nav,
   footer.site nav {

@@ -9,13 +9,36 @@ const manifest = await manifestForBuild(MANIFEST_URL);
 const docsUrl = besideManifest(MANIFEST_URL, manifest.docs ?? "dicionario.html");
 const tables = Object.entries(manifest.tables);
 const total = tables.reduce((n, [, t]) => n + t.rows, 0);
-const description = `${fmtInt(tables.length)} tabelas da ANVISA em Parquet, ${fmtInt(total)} linhas, build de ${fmtDate(manifest.built_at)}.`;
+const title = "Tabelas da ANVISA em Parquet";
+const description = `${fmtInt(tables.length)} tabelas dos dados abertos da ANVISA em Parquet, ${fmtInt(total)} linhas, build de ${fmtDate(manifest.built_at)}: alimentos, saneantes, cosméticos, medicamentos, preços CMED, empresas e medidas de fiscalização, com dicionário de colunas.`;
+const site = Astro.site!.href;
+const structured = [
+  {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: site },
+      { "@type": "ListItem", position: 2, name: "Dados" },
+    ],
+  },
+  {
+    "@type": "Dataset",
+    name: title,
+    description,
+    url: `${site}dados/`,
+    isBasedOn: "https://dados.anvisa.gov.br/dados/",
+    license: "https://opensource.org/licenses/MIT",
+    inLanguage: "pt-BR",
+    dateModified: manifest.built_at,
+    distribution: [{ "@type": "DataDownload", encodingFormat: "application/json", contentUrl: MANIFEST_URL }],
+  },
+];
 ---
 
-<Base title="Dados" description={description}>
-  <h1>Dados</h1>
+<Base title={title} description={description} structured={structured}>
+  <h1>{title}</h1>
   <p class="lead">
-    {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build de {fmtDate(manifest.built_at)}.
+    {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build de {fmtDate(manifest.built_at)}. Convertidas todo dia
+    dos CSVs da ANVISA, tipadas e ordenadas.
   </p>
   <table class="lista">
     <thead>
@@ -39,9 +62,11 @@ const description = `${fmtInt(tables.length)} tabelas da ANVISA em Parquet, ${fm
       ))}
     </tbody>
   </table>
+  <h2>Como usar</h2>
   <p class="nota">
-    Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest</a> tem os atuais, com colunas e
-    sha256. O <a href={docsUrl}>dicionário</a> descreve cada coluna. Em Python, o pacote <a href={PYPI_URL}>anvisa</a> é
-    o cliente e o pipeline. Listagem em <a href={DADOS_URL}>GitHub Pages</a>.
+    Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest.json</a> tem os endereços atuais, as
+    colunas e o sha256 de cada um. O <a href={docsUrl}>dicionário de dados</a> descreve cada coluna em português. DuckDB
+    lê um Parquet direto da URL; em Python, o pacote <a href={PYPI_URL}>anvisa</a> no PyPI é o cliente da API e o
+    pipeline que gera estes arquivos. A listagem completa está no <a href={DADOS_URL}>GitHub Pages do anvisa-api</a>.
   </p>
 </Base>
