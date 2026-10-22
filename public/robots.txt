@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://anvisa.abelhaninja.de/sitemap-index.xml

@@ -1,0 +1,100 @@
+---
+// One product: name, what it answers, the numbers read at build time, and the links. The title is the
+// product's own link; `links` are the secondary ones (OPML, dictionary, PyPI).
+export interface Stat {
+  label: string;
+  value: string;
+}
+export interface Link {
+  href: string;
+  text: string;
+}
+interface Props {
+  title: string;
+  href: string;
+  blurb: string;
+  stats: Stat[];
+  /** shown in place of the stats when the source had no numbers for this build */
+  empty?: string;
+  links?: Link[];
+}
+const { title, href, blurb, stats, empty, links = [] } = Astro.props;
+---
+
+<article class="card">
+  <h2>
+    <a href={href}>{title}</a>
+  </h2>
+  <p>{blurb}</p>
+  {stats.length ? (
+    <dl>
+      {stats.map((s) => (
+        <div>
+          <dt>{s.label}</dt>
+          <dd>{s.value}</dd>
+        </div>
+      ))}
+    </dl>
+  ) : (
+    <p class="vazio">{empty}</p>
+  )}
+  {links.length > 0 && (
+    <nav aria-label={`Mais sobre ${title}`}>
+      {links.map((l) => (
+        <a href={l.href}>{l.text}</a>
+      ))}
+    </nav>
+  )}
+</article>
+
+<style>
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+  h2 a {
+    border-bottom-width: 3px;
+  }
+  p {
+    margin: 0;
+  }
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 12px;
+  }
+  dl div {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  dt {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  dd {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .vazio {
+    color: var(--muted);
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-top: auto;
+    font-size: 0.95rem;
+  }
+</style>

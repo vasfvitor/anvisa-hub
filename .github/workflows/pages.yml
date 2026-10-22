@@ -1,0 +1,108 @@
+name: Publish site
+
+# The page's numbers are read at build time from two live files: the manifest of anvisa-api (published
+# at 21:00 UTC on days with new data, often late) and the meta.json of anvisa-feeds (09:00 UTC daily).
+# Instead of guessing the hour, the cron passes a few times a day and only publishes when one of the two
+# moved against what the site was built from (/build.json). Push and manual dispatch always publish.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 9 * * *" # after the feeds crawl
+    - cron: "30 22 * * *" # after the data pipeline
+    - cron: "30 1 * * *" # the pipeline's cron drifts
+  workflow_dispatch:
+
+# Least privilege: nothing by default; each job asks for the scope it uses.
+permissions: {}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {} # reads public URLs only
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    steps:
+      - name: Compare the live sources with what the site was built from
+        id: compare
+        env:
+          EVENT: ${{ github.event_name }}
+          # the same as src/lib/config.ts and `site` in astro.config.mjs
+          MANIFEST: https://vasfvitor.github.io/anvisa-api/manifest.json
+          FEEDS_META: https://anvisa.feeds.abelhaninja.de/meta.json
+          PUBLISHED: https://anvisa.abelhaninja.de/build.json
+        run: |
+          if [ "$EVENT" != schedule ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # ?t= gets past the 600 s Pages cache; a failed read counts as a change (publish)
+          build=$(curl -fsS "$MANIFEST?t=$(date +%s)" | jq -r .build_id) || build=""
+          feeds=$(curl -fsS "$FEEDS_META?t=$(date +%s)" | jq -r .date) || feeds=null
+          site=$(curl -fsS "$PUBLISHED?t=$(date +%s)") || site=""
+          site_build=$(jq -r .anvisa_build_id <<<"$site" 2>/dev/null) || site_build=""
+          site_feeds=$(jq -r .feeds_date <<<"$site" 2>/dev/null) || site_feeds=""
+          echo "manifest: ${build:-?} / ${site_build:-?} · feeds: ${feeds:-?} / ${site_feeds:-?}"
+          if [ -n "$build" ] && [ "$build" != null ] && [ "$build" = "$site_build" ] && [ "$feeds" = "$site_feeds" ]; then
+            echo "unchanged: build $build and feeds $feeds are current"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: verify
+    if: needs.verify.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read # reads the repository
+      pages: write # publishes to GitHub Pages
+      id-token: write # OIDC required by deploy-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # this job pushes nothing
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      # after pnpm: `cache: pnpm` needs pnpm on the PATH
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # format and lint first: they fail fast and need no network (lint runs astro sync before)
+      - run: pnpm format:check
+
+      - run: pnpm lint
+
+      - run: pnpm test
+
+      # check and build read the live sources (empty PUBLIC_* variables fall back to config.ts)
+      - run: pnpm check
+
+      - name: Build
+        run: pnpm build
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

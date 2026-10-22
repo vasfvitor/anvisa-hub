@@ -1,0 +1,236 @@
+---
+// Page shell: head tags (canonical, Open Graph, Twitter card, JSON-LD), header with the mark, footer with
+// the repositories. No client JavaScript anywhere on the site.
+import Logo from "../components/Logo.astro";
+import { HOME_URL, REPOS } from "../lib/config";
+import { DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** out of search engines (the error page) */
+  noindex?: boolean;
+  /** extra JSON-LD objects for the page, appended to the site's own */
+  structured?: Record<string, unknown>[];
+}
+const { title, description = DESCRIPTION, noindex = false, structured = [] } = Astro.props;
+const fullTitle = pageTitle(title);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL("/og.png", Astro.site).href;
+const site = Astro.site!.href;
+// JSON inside <script>: "</" must not appear raw
+const jsonLd = (d: Record<string, unknown>) => JSON.stringify(d).replace(/</g, "\\u003c");
+const graph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${site}#website`,
+      url: site,
+      name: NAME,
+      description: DESCRIPTION,
+      inLanguage: "pt-BR",
+      publisher: { "@id": `${site}#person` },
+    },
+    {
+      "@type": "Person",
+      "@id": `${site}#person`,
+      name: "Vitor Ayres",
+      url: "https://virtuaires.com.br",
+      sameAs: ["https://github.com/vasfvitor", "https://www.linkedin.com/in/ayresvitor/"],
+    },
+    ...structured,
+  ],
+};
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={NAME} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {!noindex && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="abelhaninja, a abelha ninja" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <script type="application/ld+json" set:html={jsonLd(graph)} />
+  </head>
+  <body>
+    <a class="skip" href="#conteudo">
+      Ir para o conteúdo
+    </a>
+    <header class="site">
+      <a class="mark" href="/" aria-label={NAME}>
+        <Logo />
+        <span>{NAME}</span>
+      </a>
+      <nav aria-label="Projetos">
+        <a href={REPOS.hub}>GitHub</a>
+        <a href={HOME_URL}>abelhaninja.de</a>
+      </nav>
+    </header>
+    <main id="conteudo">
+      <slot />
+    </main>
+    <footer class="site">
+      <p class="aviso">{DISCLAIMER}</p>
+      <nav aria-label="Repositórios">
+        <a href={REPOS.api}>anvisa-api</a>
+        <a href={REPOS.dash}>anvisa-dash</a>
+        <a href={REPOS.feeds}>anvisa-feeds</a>
+        <a href={REPOS.hub}>anvisa-hub</a>
+      </nav>
+      <p class="licenca">
+        Código sob licença MIT. Dados da ANVISA, reproduzidos sem alteração.
+        <a href="https://virtuaires.com.br">Vitor Ayres</a>.
+      </p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fafaf7;
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #c99a06;
+    --card: #ffffff;
+    --line: #e4e1d8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212;
+      --fg: #ededed;
+      --muted: #9a9a9a;
+      --accent: #f0c23b;
+      --card: #1c1c1c;
+      --line: #2c2c2c;
+    }
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    font:
+      18px/1.5 system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+  }
+  body {
+    margin: 0 auto;
+    padding: 0 16px;
+    max-width: 64rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 1px;
+  }
+  a:hover,
+  a:focus-visible {
+    color: var(--accent);
+    outline: none;
+  }
+  .skip {
+    position: absolute;
+    left: -999px;
+    top: 8px;
+    background: var(--card);
+    padding: 8px 12px;
+  }
+  .skip:focus {
+    left: 16px;
+  }
+  header.site {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding: 20px 0;
+  }
+  header.site .mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    border: 0;
+    font-weight: 600;
+  }
+  header.site .mark svg {
+    width: 36px;
+    height: 36px;
+  }
+  header.site nav,
+  footer.site nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+  main {
+    flex: 1;
+  }
+  h1 {
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    line-height: 1.15;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .lead {
+    color: var(--muted);
+    max-width: 44rem;
+    margin: 0 0 2rem;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 16px;
+    margin: 0 0 2.5rem;
+  }
+  .proveniencia {
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 50rem;
+  }
+  footer.site {
+    border-top: 1px solid var(--line);
+    padding: 1.5rem 0 2rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    display: grid;
+    gap: 12px;
+  }
+  footer.site .aviso {
+    margin: 0;
+    color: var(--fg);
+  }
+  footer.site .licenca {
+    margin: 0;
+  }
+</style>

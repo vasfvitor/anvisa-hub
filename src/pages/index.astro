@@ -1,0 +1,123 @@
+---
+// The one page: three cards with numbers read from the manifest of anvisa-api and the meta.json of
+// anvisa-feeds at build time. Nothing here is typed by hand; when a source has no number, the card says so.
+import Card from "../components/Card.astro";
+import type { Stat } from "../components/Card.astro";
+import Base from "../layouts/Base.astro";
+import { DESCRIPTION, TITLE } from "../lib/brand";
+import {
+  ANVISA_CONSULTAS_URL,
+  ANVISA_DADOS_URL,
+  CONTEM_URL,
+  DADOS_URL,
+  FEEDS_META_URL,
+  FEEDS_URL,
+  MANIFEST_URL,
+  PYPI_URL,
+  REPOS,
+} from "../lib/config";
+import { feedsMetaForBuild } from "../lib/feeds";
+import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
+import { besideManifest, latestLoadedAt, manifestForBuild } from "../lib/manifest";
+
+const manifest = await manifestForBuild(MANIFEST_URL);
+const feeds = await feedsMetaForBuild(FEEDS_META_URL);
+
+const tables = manifest.tables;
+const stat = (label: string, name: string): Stat[] => {
+  const t = tables[name];
+  return t ? [{ label, value: fmtInt(t.rows) }] : [];
+};
+const loadedAt = latestLoadedAt(manifest);
+
+const contemStats: Stat[] = [
+  ...stat("produtos", "produtos"),
+  ...stat("empresas", "empresas"),
+  ...(loadedAt ? [{ label: "dados de", value: fmtDate(loadedAt) }] : []),
+];
+const feedsStats: Stat[] = feeds
+  ? [
+      { label: "filas acompanhadas", value: fmtInt(feeds.subfilas_total) },
+      { label: "processos na fila", value: fmtInt(feeds.rows) },
+      { label: "coleta de", value: fmtDateTime(feeds.finished) },
+    ]
+  : [];
+const dadosStats: Stat[] = [
+  { label: "tabelas", value: fmtInt(Object.keys(tables).length) },
+  { label: "linhas", value: fmtInt(Object.values(tables).reduce((n, t) => n + t.rows, 0)) },
+  { label: "build de", value: fmtDate(manifest.built_at) },
+];
+const docsUrl = besideManifest(MANIFEST_URL, manifest.docs ?? "dicionario.html");
+
+const products = [
+  { "@type": "WebSite", name: "contém", url: CONTEM_URL, inLanguage: "pt-BR" },
+  { "@type": "WebSite", name: "anvisa.feeds", url: FEEDS_URL, inLanguage: "pt-BR" },
+  { "@type": "Dataset", name: "anvisa-api dados abertos", url: DADOS_URL, isBasedOn: ANVISA_DADOS_URL },
+];
+const structured = [
+  {
+    "@type": "ItemList",
+    "@id": `${Astro.site!.href}#produtos`,
+    name: TITLE,
+    itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: p })),
+  },
+];
+---
+
+<Base title={TITLE} description={DESCRIPTION} structured={structured}>
+  <h1>{TITLE}</h1>
+  <p class="lead">
+    Busca de produtos regularizados, feeds das filas de análise e os dados abertos em Parquet que alimentam os dois.
+    Tudo da ANVISA, reproduzido sem alteração, com a data da última coleta.
+  </p>
+
+  <section class="cards" aria-label="Projetos">
+    <Card
+      title="contém"
+      href={CONTEM_URL}
+      blurb="Alimentos, suplementos, produtos de limpeza e cosméticos liberados pela ANVISA, pela marca, pelo nome, pela empresa, pelo CNPJ ou pelo número do rótulo. Uma página por empresa."
+      stats={contemStats}
+      empty="Sem números neste build."
+      links={[
+        { href: `${CONTEM_URL}empresas/`, text: "empresas de A a Z" },
+        { href: REPOS.dash, text: "código" },
+      ]}
+    />
+    <Card
+      title="anvisa.feeds"
+      href={FEEDS_URL}
+      blurb="As filas de análise de petições, uma por subfila, em Atom. Assine a sua e filtre pelo número do processo: entrou, saiu, mudou de posição, todo dia."
+      stats={feedsStats}
+      empty="Números em breve: o site de feeds ainda não publicou o resumo."
+      links={[
+        { href: `${FEEDS_URL}feeds.opml`, text: "todas as filas em OPML" },
+        { href: REPOS.feeds, text: "código" },
+      ]}
+    />
+    <Card
+      title="dados abertos"
+      href={DADOS_URL}
+      blurb="Os CSVs de dados.anvisa.gov.br convertidos em Parquet todo dia, com manifest, dicionário de dados e soma de verificação. Para DuckDB, pandas ou o que você usar."
+      stats={dadosStats}
+      empty="Sem números neste build."
+      links={[
+        { href: docsUrl, text: "dicionário de dados" },
+        { href: MANIFEST_URL, text: "manifest.json" },
+        { href: PYPI_URL, text: "anvisa no PyPI" },
+        { href: REPOS.api, text: "código" },
+      ]}
+    />
+  </section>
+
+  <section class="proveniencia" aria-label="Proveniência">
+    <p>
+      Os produtos e as empresas vêm dos arquivos abertos em <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a>; as
+      filas, da API Consultas Externas da ANVISA. Cada site carrega a data da própria coleta, e os números desta página
+      são lidos dessas fontes a cada build, nunca escritos à mão.
+      {loadedAt && <>Dados mais recentes de {fmtDate(loadedAt)}.</>}
+    </p>
+    <p>
+      Nenhum dos três é um serviço da ANVISA, e nenhum substitui a <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
+    </p>
+  </section>
+</Base>
