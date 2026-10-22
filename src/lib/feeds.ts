@@ -16,6 +16,24 @@ export interface FeedsMeta {
   first_snapshot?: string;
   catalog?: { areas: number; grupos: number; subfilas: number };
   base_url?: string;
+  /** the CMED price-list pages, once the feeds site has a monthly snapshot */
+  cmed?: CmedMeta;
+}
+
+export interface CmedMeta {
+  /** the month's stamp, YYYYMMDD (the files' Last-Modified day) */
+  stamp: string;
+  /** dd/mm/yyyy HH:MM:SS, Brasília */
+  publicado_em: string;
+  /** when the files were read, ISO 8601 with offset */
+  fetched: string;
+  /** presentations on the list */
+  rows: number;
+  substancias: number;
+  laboratorios: number;
+  feeds: number;
+  months: number;
+  events: { entered: number; changed: number; left: number };
 }
 
 export function parseFeedsMeta(raw: unknown): FeedsMeta {
@@ -25,8 +43,18 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
   for (const k of ["rows", "subfilas_total", "subfilas_crawled"] as const) {
     if (typeof m[k] !== "number") throw new Error(`feeds meta: no ${k}`);
   }
+  if (m.cmed !== undefined) {
+    const c = m.cmed as Partial<CmedMeta> | null;
+    if (!c || typeof c !== "object" || typeof c.stamp !== "string") throw new Error("feeds meta: bad cmed");
+    for (const k of ["rows", "substancias", "laboratorios"] as const) {
+      if (typeof c[k] !== "number") throw new Error(`feeds meta: cmed without ${k}`);
+    }
+  }
   return m as FeedsMeta;
 }
+
+/** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */
+export const stampToDate = (stamp: string): string => `${stamp.slice(0, 4)}-${stamp.slice(4, 6)}-${stamp.slice(6, 8)}`;
 
 /**
  * Null when the file is not there or the site cannot be reached (the card degrades); an error when the

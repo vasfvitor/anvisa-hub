@@ -16,7 +16,7 @@ import {
   PYPI_URL,
   REPOS,
 } from "../lib/config";
-import { feedsMetaForBuild } from "../lib/feeds";
+import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
 import { besideManifest, latestLoadedAt, manifestForBuild } from "../lib/manifest";
 
@@ -42,6 +42,14 @@ const feedsStats: Stat[] = feeds
       { label: "coleta de", value: fmtDateTime(feeds.finished) },
     ]
   : [];
+const cmed = feeds?.cmed;
+const cmedStats: Stat[] = cmed
+  ? [
+      { label: "apresentações", value: fmtInt(cmed.rows) },
+      { label: "substâncias", value: fmtInt(cmed.substancias) },
+      { label: "lista de", value: fmtDate(stampToDate(cmed.stamp)) },
+    ]
+  : [];
 const dadosStats: Stat[] = [
   { label: "tabelas", value: fmtInt(Object.keys(tables).length) },
   { label: "linhas", value: fmtInt(Object.values(tables).reduce((n, t) => n + t.rows, 0)) },
@@ -52,6 +60,7 @@ const docsUrl = besideManifest(MANIFEST_URL, manifest.docs ?? "dicionario.html")
 const products = [
   { "@type": "WebSite", name: "contém", url: CONTEM_URL, inLanguage: "pt-BR" },
   { "@type": "WebSite", name: "anvisa.feeds", url: FEEDS_URL, inLanguage: "pt-BR" },
+  { "@type": "WebSite", name: "Preços CMED", url: `${FEEDS_URL}cmed/`, inLanguage: "pt-BR" },
   { "@type": "Dataset", name: "anvisa-api dados abertos", url: DADOS_URL, isBasedOn: ANVISA_DADOS_URL },
 ];
 const structured = [
@@ -95,6 +104,18 @@ const structured = [
       ]}
     />
     <Card
+      title="preços CMED"
+      href={`${FEEDS_URL}cmed/`}
+      blurb="A lista mensal de preços máximos de medicamentos da CMED, comparada mês a mês: um feed por substância e por laboratório diz o que entrou, saiu e mudou de preço."
+      stats={cmedStats}
+      empty="Em breve: o site de feeds ainda não guardou uma lista da CMED."
+      links={[
+        { href: `${FEEDS_URL}cmed/geral.xml`, text: "feed geral" },
+        { href: `${FEEDS_URL}cmed/cmed.opml`, text: "todos os feeds em OPML" },
+        { href: REPOS.feeds, text: "código" },
+      ]}
+    />
+    <Card
       title="dados abertos"
       href={DADOS_URL}
       blurb="Os CSVs de dados.anvisa.gov.br convertidos em Parquet todo dia, com manifest, dicionário de dados e soma de verificação. Para DuckDB, pandas ou o que você usar."
@@ -117,7 +138,9 @@ const structured = [
       {loadedAt && <>Dados mais recentes de {fmtDate(loadedAt)}.</>}
     </p>
     <p>
-      Nenhum dos três é um serviço da ANVISA, e nenhum substitui a <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
+      Os preços vêm da lista mensal da CMED, nos mesmos arquivos abertos; são preços máximos, não praticados. Nenhum
+      destes sites é um serviço da ANVISA ou da CMED, e nenhum substitui a{" "}
+      <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
     </p>
   </section>
 </Base>

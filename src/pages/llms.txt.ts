@@ -12,7 +12,7 @@ import {
   PYPI_URL,
   REPOS,
 } from "../lib/config";
-import { feedsMetaForBuild } from "../lib/feeds";
+import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
 import { besideManifest, manifestForBuild } from "../lib/manifest";
 
@@ -27,6 +27,9 @@ export const GET: APIRoute = async () => {
   const feedsLine = feeds
     ? `${fmtInt(feeds.subfilas_total)} subfilas, ${fmtInt(feeds.rows)} processos na fila na coleta de ${fmtDateTime(feeds.finished)}.`
     : "O resumo das filas (meta.json) ainda não estava publicado neste build.";
+  const cmedLine = feeds?.cmed
+    ? `${fmtInt(feeds.cmed.rows)} apresentações de ${fmtInt(feeds.cmed.substancias)} substâncias e ${fmtInt(feeds.cmed.laboratorios)} laboratórios na lista de ${fmtDate(stampToDate(feeds.cmed.stamp))}.`
+    : "Ainda sem lista guardada neste build.";
 
   const text = `# ${NAME}
 
@@ -39,6 +42,10 @@ ${CONTEM_URL}: busca de alimentos, suplementos, produtos de limpeza e cosmético
 ## anvisa.feeds
 
 ${FEEDS_URL}: as filas de análise de petições da ANVISA, um feed Atom por subfila, com o que entrou, saiu e mudou de posição a cada dia. Todas as filas em ${FEEDS_URL}feeds.opml; cada fila também em JSON (${FEEDS_URL}fila/<id>.json); resumo em ${FEEDS_URL}meta.json. ${feedsLine} Código: ${REPOS.feeds}
+
+## preços CMED
+
+${FEEDS_URL}cmed/: a lista mensal de preços máximos de medicamentos da CMED (PF, PMC e PMVG por alíquota de ICMS), um feed Atom por substância (${FEEDS_URL}cmed/substancia/<slug>.xml) e por laboratório (${FEEDS_URL}cmed/laboratorio/<cnpj>.xml), mais o geral (${FEEDS_URL}cmed/geral.xml), com o que entrou, saiu e mudou a cada lista; OPML em ${FEEDS_URL}cmed/cmed.opml; cada página também em JSON. ${cmedLine} A tabela completa (102 colunas) é o Parquet cmed do anvisa-api abaixo.
 
 ## dados abertos (anvisa-api)
 

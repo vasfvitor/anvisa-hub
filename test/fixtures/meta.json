@@ -13,5 +13,18 @@
   "first_snapshot": "2026-09-06",
   "catalog": { "areas": 11, "grupos": 62, "subfilas": 319 },
   "base_url": "https://anvisa.feeds.abelhaninja.de",
-  "generator": "anvisa-feeds/0.2.0"
+  "generator": "anvisa-feeds/0.3.0",
+  "cmed": {
+    "stamp": "20261009",
+    "publicado_em": "09/10/2026 12:43:03",
+    "fetched": "2026-10-22T15:48:56.207578-03:00",
+    "rows": 26635,
+    "substancias": 2264,
+    "laboratorios": 262,
+    "feeds": 2527,
+    "months": 1,
+    "first_stamp": "20261009",
+    "events": { "entered": 0, "changed": 0, "left": 0 },
+    "release": "cmed-20261009"
+  }
 }

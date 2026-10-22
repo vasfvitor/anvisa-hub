@@ -1,12 +1,14 @@
 # anvisa-hub
 
-One page at **<https://anvisa.abelhaninja.de>** that connects three open-source projects built on ANVISA's
+One page at **<https://anvisa.abelhaninja.de>** that connects the open-source projects built on ANVISA's
 public data:
 
 - **contém** (<https://contem.abelhaninja.de>, repo [`anvisa-dash`](https://github.com/vasfvitor/anvisa-dash)):
   search of products regularized by ANVISA, in the browser, over the Parquet files below.
 - **anvisa.feeds** (<https://anvisa.feeds.abelhaninja.de>, repo
   [`anvisa-feeds`](https://github.com/vasfvitor/anvisa-feeds)): the analysis queues as one Atom feed per subfila.
+- **preços CMED** (<https://anvisa.feeds.abelhaninja.de/cmed/>, same repo): CMED's monthly list of maximum
+  medicine prices, diffed month over month, as feeds per substância and per laboratório.
 - **open data** (<https://vasfvitor.github.io/anvisa-api/>, repo
   [`anvisa-api`](https://github.com/vasfvitor/anvisa-api), PyPI [`anvisa`](https://pypi.org/project/anvisa/)):
   ANVISA's CSVs converted to Parquet daily, with a manifest and a data dictionary.
