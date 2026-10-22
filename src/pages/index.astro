@@ -13,8 +13,6 @@ import {
   FEEDS_META_URL,
   FEEDS_URL,
   MANIFEST_URL,
-  PYPI_URL,
-  REPOS,
 } from "../lib/config";
 import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt, fmtMoney, fmtPct } from "../lib/format";
@@ -31,9 +29,8 @@ const stat = (label: string, name: string): Stat[] => {
 const loadedAt = latestLoadedAt(manifest);
 const cmed = feeds?.cmed;
 const novidades = feeds?.novidades;
-const destaques = cmed?.destaques;
-const altas = destaques?.altas.filter((h) => h.variacao !== null && h.variacao > 0) ?? [];
-const baixas = destaques?.baixas.filter((h) => h.variacao !== null && h.variacao < 0) ?? [];
+const altas = cmed?.destaques?.altas.filter((h) => h.variacao !== null && h.variacao > 0) ?? [];
+const baixas = cmed?.destaques?.baixas.filter((h) => h.variacao !== null && h.variacao < 0) ?? [];
 
 const contemStats: Stat[] = [
   ...stat("produtos", "produtos"),
@@ -43,7 +40,7 @@ const contemStats: Stat[] = [
 const feedsStats: Stat[] = feeds
   ? [
       { label: "filas", value: fmtInt(feeds.subfilas_total) },
-      { label: "processos na fila", value: fmtInt(feeds.rows) },
+      { label: "na fila", value: fmtInt(feeds.rows) },
       { label: "coleta", value: fmtDateTime(feeds.finished) },
     ]
   : [];
@@ -60,7 +57,6 @@ const dadosStats: Stat[] = [
   { label: "build de", value: fmtDate(manifest.built_at) },
 ];
 const docsUrl = besideManifest(MANIFEST_URL, manifest.docs ?? "dicionario.html");
-// the tables with the freshest source data, for "Dados" in the day's column
 const recentes = Object.entries(tables)
   .filter(([, t]) => t.source.loaded_at)
   .sort(([, a], [, b]) => (b.source.loaded_at! > a.source.loaded_at! ? 1 : -1))
@@ -84,23 +80,20 @@ const structured = [
 
 <Base title={TITLE} description={DESCRIPTION} structured={structured}>
   <h1>{TITLE}</h1>
-  <p class="lead">
-    O que a ANVISA publica, em sites que respondem uma pergunta cada: está liberado? em que posição está? quanto pode
-    custar?
-  </p>
+  <p class="lead">Produtos, filas e preços, lidos todo dia dos arquivos públicos da ANVISA.</p>
 
   <form class="busca" action={CONTEM_URL} method="get" role="search">
     <label class="sr-only" for="q">
       Produto, marca, empresa ou CNPJ
     </label>
     <input id="q" name="q" type="search" placeholder="Produto, marca, empresa ou CNPJ" autocomplete="off" />
-    <button type="submit">Buscar no contém</button>
+    <button type="submit">Buscar</button>
   </form>
-  <p class="atalhos">
+  <nav class="atalhos" aria-label="Atalhos">
     <a href={`${FEEDS_URL}cmed/index.html#substancia`}>Substância na CMED</a>
     <a href={`${FEEDS_URL}index.html#filas`}>Fila pelo nome</a>
     <a href={`${CONTEM_URL}empresas/`}>Empresas de A a Z</a>
-  </p>
+  </nav>
 
   <h2>Hoje</h2>
   <section class="hoje" aria-label="Mudanças mais recentes">
@@ -111,21 +104,20 @@ const structured = [
       </h3>
       {novidades ? (
         <>
-          <p class="muted">
-            {fmtInt(novidades.entraram)} entraram, {fmtInt(novidades.sairam)} saíram, em{" "}
-            {fmtInt(novidades.filas_com_movimento)} filas.
+          <p class="resumo">
+            {fmtInt(novidades.entraram)} entraram, {fmtInt(novidades.sairam)} saíram,{" "}
+            {fmtInt(novidades.filas_com_movimento)} filas
           </p>
           <ul class="mov">
             {novidades.filas.slice(0, 5).map((f) => (
               <li>
                 <span class="t">
                   <a href={f.pagina}>{f.nome}</a>
-                  <small>
-                    {f.grupo} · {f.area}
-                  </small>
+                  <small>{f.area}</small>
                 </span>
                 <span class="n">
-                  {f.entraram > 0 && <span class="up">+{f.entraram}</span>}{" "}
+                  {f.entraram > 0 && <span class="up">+{f.entraram}</span>}
+                  {f.entraram > 0 && f.sairam > 0 && " "}
                   {f.sairam > 0 && <span class="down">−{f.sairam}</span>}
                 </span>
               </li>
@@ -133,19 +125,19 @@ const structured = [
           </ul>
         </>
       ) : (
-        <p class="muted">Sem resumo das filas neste build.</p>
+        <p class="resumo">Sem resumo neste build.</p>
       )}
     </div>
     <div>
       <h3>
         <a href={`${FEEDS_URL}cmed/`}>Preços CMED</a>
-        {cmed && <small>lista de {fmtDate(stampToDate(cmed.stamp))}</small>}
+        {cmed && <small>{fmtDate(stampToDate(cmed.stamp))}</small>}
       </h3>
       {cmed && cmed.months > 1 ? (
         <>
-          <p class="muted">
-            Contra a lista anterior: {fmtInt(cmed.events.changed)} mudaram, {fmtInt(cmed.events.entered)} entraram,{" "}
-            {fmtInt(cmed.events.left)} saíram.
+          <p class="resumo">
+            {fmtInt(cmed.events.changed)} mudaram, {fmtInt(cmed.events.entered)} entraram, {fmtInt(cmed.events.left)}{" "}
+            saíram
           </p>
           <ul class="mov">
             {[...altas.slice(0, 3), ...baixas.slice(0, 3)].map((h) => (
@@ -155,24 +147,25 @@ const structured = [
                   <small>{h.apresentacao}</small>
                 </span>
                 <span class={`n ${h.variacao! > 0 ? "up" : "down"}`}>
-                  {fmtMoney(h.pf_para)} {fmtPct(h.variacao!)}
+                  {fmtPct(h.variacao!)}
+                  <small>{fmtMoney(h.pf_para)}</small>
                 </span>
               </li>
             ))}
           </ul>
         </>
       ) : cmed ? (
-        <p class="muted">Primeira lista guardada. As mudanças aparecem na próxima.</p>
+        <p class="resumo">Primeira lista guardada. As mudanças aparecem na próxima.</p>
       ) : (
-        <p class="muted">Sem lista da CMED neste build.</p>
+        <p class="resumo">Sem lista neste build.</p>
       )}
     </div>
     <div>
       <h3>
-        <a href="/dados/">Dados</a>
-        <small>build de {fmtDate(manifest.built_at)}</small>
+        <a href="/dados/">Tabelas</a>
+        <small>build {fmtDate(manifest.built_at)}</small>
       </h3>
-      <p class="muted">Tabelas com a origem mais recente.</p>
+      <p class="resumo">Origem mais recente</p>
       <ul class="mov">
         {recentes.map(([name, t]) => (
           <li>
@@ -181,7 +174,8 @@ const structured = [
               <small>{t.title ?? ""}</small>
             </span>
             <span class="n">
-              {fmtInt(t.rows)} <span class="muted">· {fmtDate(t.source.loaded_at!)}</span>
+              {fmtInt(t.rows)}
+              <small>{fmtDate(t.source.loaded_at!)}</small>
             </span>
           </li>
         ))}
@@ -190,36 +184,30 @@ const structured = [
   </section>
 
   <h2>Os sites</h2>
-  <section class="cards" aria-label="Projetos">
+  <section class="cards" aria-label="Sites">
     <Card
       title="contém"
       icon="busca"
       href={CONTEM_URL}
-      blurb="Está liberado? Alimentos, suplementos, saneantes e cosméticos por marca, nome, empresa ou CNPJ."
+      blurb="Está liberado? Alimentos, suplementos, saneantes e cosméticos."
       stats={contemStats}
       empty="Sem números neste build."
-      links={[
-        { href: `${CONTEM_URL}empresas/`, text: "empresas" },
-        { href: REPOS.dash, text: "código" },
-      ]}
+      links={[{ href: `${CONTEM_URL}empresas/`, text: "empresas" }]}
     />
     <Card
       title="anvisa.feeds"
       icon="feed"
       href={FEEDS_URL}
-      blurb="Em que posição está? As filas de análise, uma por subfila, em Atom. Assine e filtre pelo processo."
+      blurb="Em que posição está? As filas de análise, em Atom."
       stats={feedsStats}
-      empty="O site de feeds ainda não publicou o resumo."
-      links={[
-        { href: `${FEEDS_URL}feeds.opml`, text: "OPML" },
-        { href: REPOS.feeds, text: "código" },
-      ]}
+      empty="Resumo ainda não publicado."
+      links={[{ href: `${FEEDS_URL}feeds.opml`, text: "OPML" }]}
     />
     <Card
       title="preços CMED"
       icon="preco"
       href={`${FEEDS_URL}cmed/`}
-      blurb="Quanto pode custar? A lista mensal de preços máximos, mês a mês, por substância e por laboratório."
+      blurb="Quanto pode custar? A lista mensal, por substância e laboratório."
       stats={cmedStats}
       empty="Ainda sem lista guardada."
       links={[
@@ -231,25 +219,20 @@ const structured = [
       title="dados abertos"
       icon="tabela"
       href={DADOS_URL}
-      blurb="As tabelas por trás de tudo, em Parquet, com dicionário. Para DuckDB, pandas ou o que você usar."
+      blurb="As tabelas em Parquet, com dicionário."
       stats={dadosStats}
       empty="Sem números neste build."
       links={[
         { href: "/dados/", text: "tabelas" },
         { href: docsUrl, text: "dicionário" },
-        { href: PYPI_URL, text: "PyPI" },
-        { href: REPOS.api, text: "código" },
       ]}
     />
   </section>
 
-  <section class="proveniencia" aria-label="Proveniência">
-    <p>
-      Produtos, empresas e preços vêm de <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a>; as filas, da API Consultas
-      Externas. Cada site mostra a data da própria coleta. Nada aqui substitui a
-      <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
-    </p>
-  </section>
+  <p class="nota">
+    Fonte: <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a> e a API Consultas Externas. Nada aqui substitui a{" "}
+    <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
+  </p>
 </Base>
 
 <style>

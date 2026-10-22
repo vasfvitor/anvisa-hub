@@ -1,9 +1,10 @@
 ---
 // Page shell: head tags (canonical, Open Graph, Twitter card, JSON-LD), header with the mark and the
 // site nav, footer with the repositories. No client JavaScript anywhere on the site.
+// Astro drops a line break between text and a tag: keep inline links on the same line as their text.
 import Logo from "../components/Logo.astro";
 import { HOME_URL, REPOS } from "../lib/config";
-import { DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
+import { AUTHOR, DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
 
 interface Props {
   title: string;
@@ -32,14 +33,14 @@ const graph = {
       name: NAME,
       description: DESCRIPTION,
       inLanguage: "pt-BR",
-      publisher: { "@id": `${site}#person` },
+      publisher: { "@id": `${site}#org` },
     },
     {
-      "@type": "Person",
-      "@id": `${site}#person`,
-      name: "Vitor Ayres",
-      url: "https://virtuaires.com.br",
-      sameAs: ["https://github.com/vasfvitor", "https://www.linkedin.com/in/ayresvitor/"],
+      "@type": "Organization",
+      "@id": `${site}#org`,
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+      sameAs: ["https://github.com/vasfvitor"],
     },
     ...structured,
   ],
@@ -54,8 +55,8 @@ const graph = {
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbf8ef" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)" />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
@@ -94,7 +95,6 @@ const graph = {
         <a href="/sobre/" aria-current={current("/sobre/")}>
           Sobre
         </a>
-        <a href={REPOS.hub}>GitHub</a>
       </nav>
     </header>
     <main id="conteudo">
@@ -110,7 +110,7 @@ const graph = {
         <a href={HOME_URL}>abelhaninja.de</a>
       </nav>
       <p class="licenca">
-        Código MIT. Dados da ANVISA e da CMED, sem alteração. <a href="https://virtuaires.com.br">Vitor Ayres</a>.
+        Código MIT. Dados da ANVISA e da CMED, sem alteração. <a href={AUTHOR.url}>{AUTHOR.name}</a>.
       </p>
     </footer>
   </body>
@@ -118,34 +118,38 @@ const graph = {
 
 <style is:global>
   :root {
-    --bg: #fafaf7;
-    --fg: #1a1a1a;
-    --muted: #6b6b6b;
-    --accent: #c99a06;
+    --bg: #fbf8ef;
+    --fg: #1c1a14;
+    --muted: #6d6758;
+    --accent: #e0ad12;
     --accent-ink: #7a5c00;
+    --accent-soft: rgba(224, 173, 18, 0.14);
     --card: #ffffff;
-    --line: #e4e1d8;
-    --up: #15803d;
-    --down: #b91c1c;
+    --line: #e6e0cf;
+    --up: #157a3a;
+    --down: #b42318;
+    --shadow: 0 1px 2px rgba(28, 26, 20, 0.06), 0 8px 24px rgba(28, 26, 20, 0.06);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #121212;
-      --fg: #ededed;
-      --muted: #9a9a9a;
+      --bg: #111110;
+      --fg: #ebe8df;
+      --muted: #9b968a;
       --accent: #f0c23b;
       --accent-ink: #f0c23b;
-      --card: #1c1c1c;
-      --line: #2c2c2c;
+      --accent-soft: rgba(240, 194, 59, 0.12);
+      --card: #1a1917;
+      --line: #2b2a26;
       --up: #4ade80;
       --down: #f87171;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
     }
   }
   * {
     box-sizing: border-box;
   }
   html {
-    background: var(--bg);
+    background: var(--bg) radial-gradient(80rem 26rem at 35% -8rem, var(--accent-soft), transparent 70%) no-repeat;
     color: var(--fg);
     font:
       17px/1.5 system-ui,
@@ -191,7 +195,6 @@ const graph = {
     justify-content: space-between;
     gap: 12px 24px;
     padding: 18px 0;
-    border-bottom: 1px solid var(--line);
   }
   header.site .mark {
     display: inline-flex;
@@ -208,10 +211,11 @@ const graph = {
   footer.site nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 20px;
+    gap: 8px 22px;
   }
   header.site nav a {
     border-bottom-color: transparent;
+    font-weight: 500;
   }
   header.site nav a[aria-current="page"],
   header.site nav a:hover {
@@ -221,29 +225,39 @@ const graph = {
     flex: 1;
   }
   h1 {
-    font-size: clamp(1.8rem, 4.5vw, 2.6rem);
-    line-height: 1.1;
-    margin: 2rem 0 0.5rem;
-    letter-spacing: -0.01em;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.05;
+    margin: 2.5rem 0 0.75rem;
+    letter-spacing: -0.02em;
   }
   h2 {
-    font-size: 1.15rem;
-    margin: 2.5rem 0 0.75rem;
-    padding-bottom: 0.35rem;
-    border-bottom: 1px solid var(--line);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 2.75rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
   }
   h3 {
-    font-size: 1rem;
-    margin: 1.25rem 0 0.4rem;
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
   }
   p {
     margin: 0.5rem 0;
   }
   .lead {
     color: var(--muted);
-    max-width: 44rem;
-    margin: 0 0 1.5rem;
-    font-size: 1.1rem;
+    max-width: 40rem;
+    margin: 0 0 1.75rem;
+    font-size: 1.15rem;
   }
   .muted {
     color: var(--muted);
@@ -251,18 +265,19 @@ const graph = {
   .busca {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    max-width: 40rem;
-    margin: 0 0 0.5rem;
+    gap: 10px;
+    max-width: 42rem;
+    margin: 0 0 0.75rem;
   }
   .busca input {
     flex: 1 1 16rem;
     font: inherit;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--card);
     color: var(--fg);
+    box-shadow: var(--shadow);
   }
   .busca input:focus {
     outline: 2px solid var(--accent);
@@ -272,29 +287,51 @@ const graph = {
   .busca button {
     font: inherit;
     font-weight: 600;
-    padding: 10px 16px;
+    padding: 12px 18px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--accent);
-    color: #1a1a1a;
+    color: #1c1a14;
     cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .busca button:hover {
+    filter: brightness(1.05);
   }
   .atalhos {
-    font-size: 0.92rem;
-    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     margin: 0 0 2rem;
+    font-size: 0.9rem;
   }
   .atalhos a {
-    margin-right: 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 12px;
+    background: var(--card);
+  }
+  .atalhos a:hover {
+    border-color: var(--accent);
   }
   .hoje {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-    gap: 16px 32px;
-    margin: 0 0 1rem;
+    gap: 16px;
+    margin: 0;
+  }
+  .hoje > div {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
   }
   .hoje h3 {
-    margin-top: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
   }
   .hoje h3 a {
     border: 0;
@@ -302,7 +339,13 @@ const graph = {
   .hoje h3 small {
     color: var(--muted);
     font-weight: 400;
-    margin-left: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .hoje .resumo {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 6px;
   }
   ul.mov {
     list-style: none;
@@ -310,27 +353,35 @@ const graph = {
     padding: 0;
   }
   ul.mov li {
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    align-items: start;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
     font-size: 0.95rem;
   }
-  ul.mov li:last-child {
-    border-bottom: 0;
-  }
   ul.mov .t {
-    flex: 1;
     min-width: 0;
   }
   ul.mov .t small {
     color: var(--muted);
     display: block;
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   ul.mov .n {
     white-space: nowrap;
     text-align: right;
+    font-weight: 500;
+  }
+  ul.mov .n small {
+    display: block;
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.8rem;
   }
   .up {
     color: var(--up);
@@ -340,7 +391,7 @@ const graph = {
   }
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
     gap: 16px;
     margin: 0 0 2.5rem;
   }
@@ -349,50 +400,68 @@ const graph = {
     border-collapse: collapse;
     margin: 0.5rem 0 1.5rem;
     font-size: 0.95rem;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
   }
   table.lista th {
     text-align: left;
     color: var(--muted);
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--line);
-    padding: 6px 12px 6px 0;
   }
   table.lista td {
-    padding: 8px 12px 8px 0;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--line);
     vertical-align: top;
+  }
+  table.lista tr:last-child td {
+    border-bottom: 0;
   }
   table.lista td.n,
   table.lista th.n {
     text-align: right;
     white-space: nowrap;
   }
-  .proveniencia {
-    border-top: 1px solid var(--line);
-    padding-top: 1.5rem;
+  .nota {
     color: var(--muted);
     font-size: 0.95rem;
-    max-width: 50rem;
+    max-width: 48rem;
+  }
+  .sobre section {
+    margin: 0 0 2rem;
+  }
+  .sobre p {
+    max-width: 44rem;
   }
   footer.site {
     border-top: 1px solid var(--line);
+    margin-top: 2rem;
     padding: 1.5rem 0 2rem;
     color: var(--muted);
     font-size: 0.9rem;
     display: grid;
     gap: 12px;
   }
-  footer.site .aviso {
-    margin: 0;
-    color: var(--fg);
-  }
+  footer.site .aviso,
   footer.site .licenca {
     margin: 0;
+  }
+  footer.site .aviso {
+    color: var(--fg);
   }
   @media (max-width: 40rem) {
     table.lista .d {
       display: none;
+    }
+    h1 {
+      margin-top: 1.5rem;
     }
   }
 </style>

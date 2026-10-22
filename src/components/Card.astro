@@ -1,5 +1,5 @@
 ---
-// One product: icon, name, one line on what it answers, the numbers read at build time, the links.
+// One site: icon, name, one line, the numbers read at build time, one or two links.
 export interface Stat {
   label: string;
   value: string;
@@ -12,7 +12,6 @@ interface Props {
   title: string;
   href: string;
   blurb: string;
-  /** which inline icon to draw */
   icon: "busca" | "feed" | "preco" | "tabela";
   stats: Stat[];
   /** shown in place of the stats when the source had no numbers for this build */
@@ -30,12 +29,14 @@ const paths: Record<Props["icon"], string> = {
 ---
 
 <article class="card">
-  <h2>
-    <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22">
+  <span class="icone" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22">
       <path d={paths[icon]} fill="currentColor"></path>
     </svg>
+  </span>
+  <h3>
     <a href={href}>{title}</a>
-  </h2>
+  </h3>
   <p>{blurb}</p>
   {stats.length ? (
     <dl>
@@ -62,36 +63,46 @@ const paths: Record<Props["icon"], string> = {
   .card {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    box-shadow: var(--shadow);
+    transition:
+      transform 0.15s ease,
+      border-color 0.15s ease;
   }
-  h2 {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
   }
-  h2 svg {
+  .icone {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent-soft);
     color: var(--accent-ink);
-    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  h2 a {
+  h3 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  h3 a {
     border-bottom-width: 3px;
   }
   p {
     margin: 0;
     font-size: 0.95rem;
+    color: var(--muted);
   }
   dl {
-    margin: 4px 0 0;
+    margin: 6px 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
     gap: 10px;
   }
   dl div {
@@ -100,12 +111,13 @@ const paths: Record<Props["icon"], string> = {
   }
   dt {
     color: var(--muted);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
   dd {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
   }
   .vazio {
     color: var(--muted);
@@ -115,6 +127,7 @@ const paths: Record<Props["icon"], string> = {
     flex-wrap: wrap;
     gap: 6px 16px;
     margin-top: auto;
-    font-size: 0.92rem;
+    padding-top: 4px;
+    font-size: 0.9rem;
   }
 </style>

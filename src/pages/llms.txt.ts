@@ -33,7 +33,7 @@ export const GET: APIRoute = async () => {
 
   const text = `# ${NAME}
 
-> ${TITLE}. ${DESCRIPTION} Sem vínculo com a ANVISA: para qualquer decisão, confira a consulta oficial em ${ANVISA_CONSULTAS_URL}.
+> ${TITLE}. ${DESCRIPTION} Projeto de Virtuaires, sem vínculo com a ANVISA: para qualquer decisão, confira a consulta oficial em ${ANVISA_CONSULTAS_URL}.
 
 Páginas deste site: / (busca, o que mudou hoje, os quatro sites), /dados/ (todas as tabelas do manifest, com linhas e data da origem), /sobre/ (o que cada site faz e o que fica de fora).
 

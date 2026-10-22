@@ -1,7 +1,7 @@
 ---
-// Every table of the manifest: rows, source date, a line on what one row is, the dictionary link.
+// Every table of the manifest: rows, source date, what one row is, the dictionary link.
 import Base from "../layouts/Base.astro";
-import { DADOS_URL, MANIFEST_URL, PYPI_URL, REPOS } from "../lib/config";
+import { DADOS_URL, MANIFEST_URL, PYPI_URL } from "../lib/config";
 import { fmtDate, fmtInt } from "../lib/format";
 import { besideManifest, manifestForBuild } from "../lib/manifest";
 
@@ -9,14 +9,13 @@ const manifest = await manifestForBuild(MANIFEST_URL);
 const docsUrl = besideManifest(MANIFEST_URL, manifest.docs ?? "dicionario.html");
 const tables = Object.entries(manifest.tables);
 const total = tables.reduce((n, [, t]) => n + t.rows, 0);
-const description = `${fmtInt(tables.length)} tabelas da ANVISA em Parquet, ${fmtInt(total)} linhas, build de ${fmtDate(manifest.built_at)}. Nome, linhas, data da origem e dicionário.`;
+const description = `${fmtInt(tables.length)} tabelas da ANVISA em Parquet, ${fmtInt(total)} linhas, build de ${fmtDate(manifest.built_at)}.`;
 ---
 
 <Base title="Dados" description={description}>
   <h1>Dados</h1>
   <p class="lead">
-    {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build de {fmtDate(manifest.built_at)}. Os arquivos mudam de
-    endereço a cada build: o <a href={MANIFEST_URL}>manifest</a> tem os atuais.
+    {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build de {fmtDate(manifest.built_at)}.
   </p>
   <table class="lista">
     <thead>
@@ -40,14 +39,9 @@ const description = `${fmtInt(tables.length)} tabelas da ANVISA em Parquet, ${fm
       ))}
     </tbody>
   </table>
-  <h2>Como usar</h2>
-  <p>
-    Direto do endereço, com DuckDB ou pandas: cada entrada do manifest tem <code>path</code>, <code>sha256</code> e as
-    colunas com descrição. O <a href={docsUrl}>dicionário</a> é a mesma informação em uma página.
-  </p>
-  <p>
-    Em Python, <a href={PYPI_URL}>anvisa</a> no PyPI é o cliente da API Consultas Externas e o pipeline que gera estes
-    arquivos. Código em <a href={REPOS.api}>anvisa-api</a>; listagem e dicionário em{" "}
-    <a href={DADOS_URL}>GitHub Pages</a>.
+  <p class="nota">
+    Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest</a> tem os atuais, com colunas e
+    sha256. O <a href={docsUrl}>dicionário</a> descreve cada coluna. Em Python, o pacote <a href={PYPI_URL}>anvisa</a> é
+    o cliente e o pipeline. Listagem em <a href={DADOS_URL}>GitHub Pages</a>.
   </p>
 </Base>
