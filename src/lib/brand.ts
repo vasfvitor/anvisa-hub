@@ -1,12 +1,12 @@
-// The hub's own name and the sentences repeated across the page, the feed and llms.txt. Public text is
-// pt-BR; the product names (contém, anvisa.feeds, anvisa-api) stay as each product spells them.
+// The hub's own name and the sentences shared by the pages, the feed and llms.txt. Public text is pt-BR,
+// short, and the product names stay as each product spells them: contém, anvisa.feeds, anvisa-api.
 export const NAME = "anvisa.abelhaninja.de";
 
-export const TITLE = "Dados da ANVISA, em três entradas";
+export const TITLE = "ANVISA em dados abertos";
 
 export const DESCRIPTION =
-  "Busca de produtos regularizados, feeds das filas de análise e dados abertos em Parquet. Dados da ANVISA, reproduzidos sem alteração, com a data da última coleta.";
+  "Busca de produtos regularizados, feeds das filas de análise, preços da CMED e as tabelas em Parquet. Dados da ANVISA, sem alteração, com a data de cada coleta.";
 
-export const DISCLAIMER = "Sem vínculo com a ANVISA. Confira sempre a consulta oficial.";
+export const DISCLAIMER = "Sem vínculo com a ANVISA ou a CMED. Confira sempre a consulta oficial.";
 
 export const pageTitle = (title: string): string => `${title} · ${NAME}`;

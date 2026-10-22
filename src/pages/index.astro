@@ -1,6 +1,6 @@
 ---
-// The one page: three cards with numbers read from the manifest of anvisa-api and the meta.json of
-// anvisa-feeds at build time. Nothing here is typed by hand; when a source has no number, the card says so.
+// The home: a search box, what moved today, four cards. Every number is read at build time from the
+// manifest of anvisa-api and the meta.json of anvisa-feeds; nothing is typed by hand.
 import Card from "../components/Card.astro";
 import type { Stat } from "../components/Card.astro";
 import Base from "../layouts/Base.astro";
@@ -17,7 +17,7 @@ import {
   REPOS,
 } from "../lib/config";
 import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
-import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
+import { fmtDate, fmtDateTime, fmtInt, fmtMoney, fmtPct } from "../lib/format";
 import { besideManifest, latestLoadedAt, manifestForBuild } from "../lib/manifest";
 
 const manifest = await manifestForBuild(MANIFEST_URL);
@@ -29,6 +29,11 @@ const stat = (label: string, name: string): Stat[] => {
   return t ? [{ label, value: fmtInt(t.rows) }] : [];
 };
 const loadedAt = latestLoadedAt(manifest);
+const cmed = feeds?.cmed;
+const novidades = feeds?.novidades;
+const destaques = cmed?.destaques;
+const altas = destaques?.altas.filter((h) => h.variacao !== null && h.variacao > 0) ?? [];
+const baixas = destaques?.baixas.filter((h) => h.variacao !== null && h.variacao < 0) ?? [];
 
 const contemStats: Stat[] = [
   ...stat("produtos", "produtos"),
@@ -37,12 +42,11 @@ const contemStats: Stat[] = [
 ];
 const feedsStats: Stat[] = feeds
   ? [
-      { label: "filas acompanhadas", value: fmtInt(feeds.subfilas_total) },
+      { label: "filas", value: fmtInt(feeds.subfilas_total) },
       { label: "processos na fila", value: fmtInt(feeds.rows) },
-      { label: "coleta de", value: fmtDateTime(feeds.finished) },
+      { label: "coleta", value: fmtDateTime(feeds.finished) },
     ]
   : [];
-const cmed = feeds?.cmed;
 const cmedStats: Stat[] = cmed
   ? [
       { label: "apresentações", value: fmtInt(cmed.rows) },
@@ -56,6 +60,11 @@ const dadosStats: Stat[] = [
   { label: "build de", value: fmtDate(manifest.built_at) },
 ];
 const docsUrl = besideManifest(MANIFEST_URL, manifest.docs ?? "dicionario.html");
+// the tables with the freshest source data, for "Dados" in the day's column
+const recentes = Object.entries(tables)
+  .filter(([, t]) => t.source.loaded_at)
+  .sort(([, a], [, b]) => (b.source.loaded_at! > a.source.loaded_at! ? 1 : -1))
+  .slice(0, 4);
 
 const products = [
   { "@type": "WebSite", name: "contém", url: CONTEM_URL, inLanguage: "pt-BR" },
@@ -76,55 +85,159 @@ const structured = [
 <Base title={TITLE} description={DESCRIPTION} structured={structured}>
   <h1>{TITLE}</h1>
   <p class="lead">
-    Busca de produtos regularizados, feeds das filas de análise e os dados abertos em Parquet que alimentam os dois.
-    Tudo da ANVISA, reproduzido sem alteração, com a data da última coleta.
+    O que a ANVISA publica, em sites que respondem uma pergunta cada: está liberado? em que posição está? quanto pode
+    custar?
   </p>
 
+  <form class="busca" action={CONTEM_URL} method="get" role="search">
+    <label class="sr-only" for="q">
+      Produto, marca, empresa ou CNPJ
+    </label>
+    <input id="q" name="q" type="search" placeholder="Produto, marca, empresa ou CNPJ" autocomplete="off" />
+    <button type="submit">Buscar no contém</button>
+  </form>
+  <p class="atalhos">
+    <a href={`${FEEDS_URL}cmed/index.html#substancia`}>Substância na CMED</a>
+    <a href={`${FEEDS_URL}index.html#filas`}>Fila pelo nome</a>
+    <a href={`${CONTEM_URL}empresas/`}>Empresas de A a Z</a>
+  </p>
+
+  <h2>Hoje</h2>
+  <section class="hoje" aria-label="Mudanças mais recentes">
+    <div>
+      <h3>
+        <a href={FEEDS_URL}>Filas</a>
+        {novidades && <small>{fmtDate(novidades.dia)}</small>}
+      </h3>
+      {novidades ? (
+        <>
+          <p class="muted">
+            {fmtInt(novidades.entraram)} entraram, {fmtInt(novidades.sairam)} saíram, em{" "}
+            {fmtInt(novidades.filas_com_movimento)} filas.
+          </p>
+          <ul class="mov">
+            {novidades.filas.slice(0, 5).map((f) => (
+              <li>
+                <span class="t">
+                  <a href={f.pagina}>{f.nome}</a>
+                  <small>
+                    {f.grupo} · {f.area}
+                  </small>
+                </span>
+                <span class="n">
+                  {f.entraram > 0 && <span class="up">+{f.entraram}</span>}{" "}
+                  {f.sairam > 0 && <span class="down">−{f.sairam}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p class="muted">Sem resumo das filas neste build.</p>
+      )}
+    </div>
+    <div>
+      <h3>
+        <a href={`${FEEDS_URL}cmed/`}>Preços CMED</a>
+        {cmed && <small>lista de {fmtDate(stampToDate(cmed.stamp))}</small>}
+      </h3>
+      {cmed && cmed.months > 1 ? (
+        <>
+          <p class="muted">
+            Contra a lista anterior: {fmtInt(cmed.events.changed)} mudaram, {fmtInt(cmed.events.entered)} entraram,{" "}
+            {fmtInt(cmed.events.left)} saíram.
+          </p>
+          <ul class="mov">
+            {[...altas.slice(0, 3), ...baixas.slice(0, 3)].map((h) => (
+              <li>
+                <span class="t">
+                  {h.pagina ? <a href={h.pagina}>{h.produto}</a> : h.produto}
+                  <small>{h.apresentacao}</small>
+                </span>
+                <span class={`n ${h.variacao! > 0 ? "up" : "down"}`}>
+                  {fmtMoney(h.pf_para)} {fmtPct(h.variacao!)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : cmed ? (
+        <p class="muted">Primeira lista guardada. As mudanças aparecem na próxima.</p>
+      ) : (
+        <p class="muted">Sem lista da CMED neste build.</p>
+      )}
+    </div>
+    <div>
+      <h3>
+        <a href="/dados/">Dados</a>
+        <small>build de {fmtDate(manifest.built_at)}</small>
+      </h3>
+      <p class="muted">Tabelas com a origem mais recente.</p>
+      <ul class="mov">
+        {recentes.map(([name, t]) => (
+          <li>
+            <span class="t">
+              <a href={`${docsUrl}#${name}`}>{name}</a>
+              <small>{t.title ?? ""}</small>
+            </span>
+            <span class="n">
+              {fmtInt(t.rows)} <span class="muted">· {fmtDate(t.source.loaded_at!)}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <h2>Os sites</h2>
   <section class="cards" aria-label="Projetos">
     <Card
       title="contém"
+      icon="busca"
       href={CONTEM_URL}
-      blurb="Alimentos, suplementos, produtos de limpeza e cosméticos liberados pela ANVISA, pela marca, pelo nome, pela empresa, pelo CNPJ ou pelo número do rótulo. Uma página por empresa."
+      blurb="Está liberado? Alimentos, suplementos, saneantes e cosméticos por marca, nome, empresa ou CNPJ."
       stats={contemStats}
       empty="Sem números neste build."
       links={[
-        { href: `${CONTEM_URL}empresas/`, text: "empresas de A a Z" },
+        { href: `${CONTEM_URL}empresas/`, text: "empresas" },
         { href: REPOS.dash, text: "código" },
       ]}
     />
     <Card
       title="anvisa.feeds"
+      icon="feed"
       href={FEEDS_URL}
-      blurb="As filas de análise de petições, uma por subfila, em Atom. Assine a sua e filtre pelo número do processo: entrou, saiu, mudou de posição, todo dia."
+      blurb="Em que posição está? As filas de análise, uma por subfila, em Atom. Assine e filtre pelo processo."
       stats={feedsStats}
-      empty="Números em breve: o site de feeds ainda não publicou o resumo."
+      empty="O site de feeds ainda não publicou o resumo."
       links={[
-        { href: `${FEEDS_URL}feeds.opml`, text: "todas as filas em OPML" },
+        { href: `${FEEDS_URL}feeds.opml`, text: "OPML" },
         { href: REPOS.feeds, text: "código" },
       ]}
     />
     <Card
       title="preços CMED"
+      icon="preco"
       href={`${FEEDS_URL}cmed/`}
-      blurb="A lista mensal de preços máximos de medicamentos da CMED, comparada mês a mês: um feed por substância e por laboratório diz o que entrou, saiu e mudou de preço."
+      blurb="Quanto pode custar? A lista mensal de preços máximos, mês a mês, por substância e por laboratório."
       stats={cmedStats}
-      empty="Em breve: o site de feeds ainda não guardou uma lista da CMED."
+      empty="Ainda sem lista guardada."
       links={[
         { href: `${FEEDS_URL}cmed/geral.xml`, text: "feed geral" },
-        { href: `${FEEDS_URL}cmed/cmed.opml`, text: "todos os feeds em OPML" },
-        { href: REPOS.feeds, text: "código" },
+        { href: `${FEEDS_URL}cmed/cmed.opml`, text: "OPML" },
       ]}
     />
     <Card
       title="dados abertos"
+      icon="tabela"
       href={DADOS_URL}
-      blurb="Os CSVs de dados.anvisa.gov.br convertidos em Parquet todo dia, com manifest, dicionário de dados e soma de verificação. Para DuckDB, pandas ou o que você usar."
+      blurb="As tabelas por trás de tudo, em Parquet, com dicionário. Para DuckDB, pandas ou o que você usar."
       stats={dadosStats}
       empty="Sem números neste build."
       links={[
-        { href: docsUrl, text: "dicionário de dados" },
-        { href: MANIFEST_URL, text: "manifest.json" },
-        { href: PYPI_URL, text: "anvisa no PyPI" },
+        { href: "/dados/", text: "tabelas" },
+        { href: docsUrl, text: "dicionário" },
+        { href: PYPI_URL, text: "PyPI" },
         { href: REPOS.api, text: "código" },
       ]}
     />
@@ -132,15 +245,20 @@ const structured = [
 
   <section class="proveniencia" aria-label="Proveniência">
     <p>
-      Os produtos e as empresas vêm dos arquivos abertos em <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a>; as
-      filas, da API Consultas Externas da ANVISA. Cada site carrega a data da própria coleta, e os números desta página
-      são lidos dessas fontes a cada build, nunca escritos à mão.
-      {loadedAt && <>Dados mais recentes de {fmtDate(loadedAt)}.</>}
-    </p>
-    <p>
-      Os preços vêm da lista mensal da CMED, nos mesmos arquivos abertos; são preços máximos, não praticados. Nenhum
-      destes sites é um serviço da ANVISA ou da CMED, e nenhum substitui a{" "}
+      Produtos, empresas e preços vêm de <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a>; as filas, da API Consultas
+      Externas. Cada site mostra a data da própria coleta. Nada aqui substitui a
       <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
     </p>
   </section>
 </Base>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+</style>

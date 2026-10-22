@@ -16,7 +16,8 @@
     "lint": "astro sync && eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "astro": "astro"
+    "astro": "astro",
+    "og": "node scripts/og.mjs"
   },
   "packageManager": "pnpm@10.22.0",
   "pnpm": {

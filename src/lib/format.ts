@@ -15,6 +15,20 @@ const dayTime = new Intl.DateTimeFormat("pt-BR", {
 
 export const fmtInt = (n: number): string => int.format(n);
 
+/** centavos → "R$ 30,73"; null → "–". */
+export function fmtMoney(centavos: number | null): string {
+  if (centavos === null) return "–";
+  const reais = Math.trunc(centavos / 100);
+  const cents = Math.abs(centavos % 100);
+  return `R$ ${int.format(reais)},${String(cents).padStart(2, "0")}`;
+}
+
+/** 10 → "+10,0 %", -3.25 → "−3,3 %". */
+export function fmtPct(value: number): string {
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+  return `${sign}${Math.abs(value).toFixed(1).replace(".", ",")} %`;
+}
+
 /** "2026-10-08" or an ISO timestamp → "08/10/2026". */
 export function fmtDate(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);

@@ -18,6 +18,42 @@ export interface FeedsMeta {
   base_url?: string;
   /** the CMED price-list pages, once the feeds site has a monthly snapshot */
   cmed?: CmedMeta;
+  /** the day's busiest subfilas */
+  novidades?: Novidades;
+}
+
+export interface Mover {
+  subfila: number;
+  nome: string;
+  grupo: string;
+  area: string;
+  entraram: number;
+  sairam: number;
+  /** processes queued today */
+  fila: number;
+  pagina: string;
+}
+
+export interface Novidades {
+  dia: string;
+  filas_com_movimento: number;
+  entraram: number;
+  sairam: number;
+  /** up to ten, busiest first */
+  filas: Mover[];
+}
+
+export interface Highlight {
+  produto: string | null;
+  apresentacao: string | null;
+  substancia: string;
+  laboratorio: string | null;
+  /** PF at ICMS 0 %, centavos; null when the presentation was not on that list */
+  pf_de: number | null;
+  pf_para: number | null;
+  /** percent, one decimal; null for entries and exits */
+  variacao: number | null;
+  pagina: string | null;
 }
 
 export interface CmedMeta {
@@ -34,6 +70,7 @@ export interface CmedMeta {
   feeds: number;
   months: number;
   events: { entered: number; changed: number; left: number };
+  destaques?: { altas: Highlight[]; baixas: Highlight[]; entradas: Highlight[]; saidas: Highlight[] };
 }
 
 export function parseFeedsMeta(raw: unknown): FeedsMeta {

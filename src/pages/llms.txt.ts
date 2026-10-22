@@ -35,6 +35,8 @@ export const GET: APIRoute = async () => {
 
 > ${TITLE}. ${DESCRIPTION} Sem vínculo com a ANVISA: para qualquer decisão, confira a consulta oficial em ${ANVISA_CONSULTAS_URL}.
 
+Páginas deste site: / (busca, o que mudou hoje, os quatro sites), /dados/ (todas as tabelas do manifest, com linhas e data da origem), /sobre/ (o que cada site faz e o que fica de fora).
+
 ## contém
 
 ${CONTEM_URL}: busca de alimentos, suplementos, produtos de limpeza e cosméticos regularizados pela ANVISA, por marca, nome, empresa, CNPJ ou número do rótulo. A busca roda no navegador sobre os Parquet abaixo; sem JavaScript há uma página por empresa (${CONTEM_URL}empresa/<CNPJ>/) e um ${CONTEM_URL}llms.txt próprio. Código: ${REPOS.dash}

@@ -1,6 +1,6 @@
 ---
-// Page shell: head tags (canonical, Open Graph, Twitter card, JSON-LD), header with the mark, footer with
-// the repositories. No client JavaScript anywhere on the site.
+// Page shell: head tags (canonical, Open Graph, Twitter card, JSON-LD), header with the mark and the
+// site nav, footer with the repositories. No client JavaScript anywhere on the site.
 import Logo from "../components/Logo.astro";
 import { HOME_URL, REPOS } from "../lib/config";
 import { DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
@@ -18,6 +18,8 @@ const fullTitle = pageTitle(title);
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = new URL("/og.png", Astro.site).href;
 const site = Astro.site!.href;
+const here = Astro.url.pathname;
+const current = (path: string) => (here === path ? "page" : undefined);
 // JSON inside <script>: "</" must not appear raw
 const jsonLd = (d: Record<string, unknown>) => JSON.stringify(d).replace(/</g, "\\u003c");
 const graph = {
@@ -66,7 +68,7 @@ const graph = {
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="abelhaninja, a abelha ninja" />
+    <meta property="og:image:alt" content="ANVISA em dados abertos, anvisa.abelhaninja.de" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
@@ -82,9 +84,17 @@ const graph = {
         <Logo />
         <span>{NAME}</span>
       </a>
-      <nav aria-label="Projetos">
+      <nav aria-label="Seções">
+        <a href="/" aria-current={current("/")}>
+          Início
+        </a>
+        <a href="/dados/" aria-current={current("/dados/")}>
+          Dados
+        </a>
+        <a href="/sobre/" aria-current={current("/sobre/")}>
+          Sobre
+        </a>
         <a href={REPOS.hub}>GitHub</a>
-        <a href={HOME_URL}>abelhaninja.de</a>
       </nav>
     </header>
     <main id="conteudo">
@@ -97,10 +107,10 @@ const graph = {
         <a href={REPOS.dash}>anvisa-dash</a>
         <a href={REPOS.feeds}>anvisa-feeds</a>
         <a href={REPOS.hub}>anvisa-hub</a>
+        <a href={HOME_URL}>abelhaninja.de</a>
       </nav>
       <p class="licenca">
-        Código sob licença MIT. Dados da ANVISA, reproduzidos sem alteração.
-        <a href="https://virtuaires.com.br">Vitor Ayres</a>.
+        Código MIT. Dados da ANVISA e da CMED, sem alteração. <a href="https://virtuaires.com.br">Vitor Ayres</a>.
       </p>
     </footer>
   </body>
@@ -112,8 +122,11 @@ const graph = {
     --fg: #1a1a1a;
     --muted: #6b6b6b;
     --accent: #c99a06;
+    --accent-ink: #7a5c00;
     --card: #ffffff;
     --line: #e4e1d8;
+    --up: #15803d;
+    --down: #b91c1c;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -121,8 +134,11 @@ const graph = {
       --fg: #ededed;
       --muted: #9a9a9a;
       --accent: #f0c23b;
+      --accent-ink: #f0c23b;
       --card: #1c1c1c;
       --line: #2c2c2c;
+      --up: #4ade80;
+      --down: #f87171;
     }
   }
   * {
@@ -132,16 +148,17 @@ const graph = {
     background: var(--bg);
     color: var(--fg);
     font:
-      18px/1.5 system-ui,
+      17px/1.5 system-ui,
       -apple-system,
       "Segoe UI",
       Roboto,
       sans-serif;
+    font-variant-numeric: tabular-nums;
   }
   body {
     margin: 0 auto;
     padding: 0 16px;
-    max-width: 64rem;
+    max-width: 68rem;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -154,7 +171,7 @@ const graph = {
   }
   a:hover,
   a:focus-visible {
-    color: var(--accent);
+    color: var(--accent-ink);
     outline: none;
   }
   .skip {
@@ -173,7 +190,8 @@ const graph = {
     align-items: center;
     justify-content: space-between;
     gap: 12px 24px;
-    padding: 20px 0;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
   }
   header.site .mark {
     display: inline-flex;
@@ -183,8 +201,8 @@ const graph = {
     font-weight: 600;
   }
   header.site .mark svg {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
   header.site nav,
   footer.site nav {
@@ -192,24 +210,163 @@ const graph = {
     flex-wrap: wrap;
     gap: 8px 20px;
   }
+  header.site nav a {
+    border-bottom-color: transparent;
+  }
+  header.site nav a[aria-current="page"],
+  header.site nav a:hover {
+    border-bottom-color: var(--accent);
+  }
   main {
     flex: 1;
   }
   h1 {
-    font-size: clamp(1.7rem, 4vw, 2.4rem);
-    line-height: 1.15;
-    margin: 1.5rem 0 0.5rem;
+    font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+    line-height: 1.1;
+    margin: 2rem 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--line);
+  }
+  h3 {
+    font-size: 1rem;
+    margin: 1.25rem 0 0.4rem;
+  }
+  p {
+    margin: 0.5rem 0;
   }
   .lead {
     color: var(--muted);
     max-width: 44rem;
+    margin: 0 0 1.5rem;
+    font-size: 1.1rem;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .busca {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 40rem;
+    margin: 0 0 0.5rem;
+  }
+  .busca input {
+    flex: 1 1 16rem;
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--fg);
+  }
+  .busca input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+  .busca button {
+    font: inherit;
+    font-weight: 600;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #1a1a1a;
+    cursor: pointer;
+  }
+  .atalhos {
+    font-size: 0.92rem;
+    color: var(--muted);
     margin: 0 0 2rem;
+  }
+  .atalhos a {
+    margin-right: 14px;
+  }
+  .hoje {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 16px 32px;
+    margin: 0 0 1rem;
+  }
+  .hoje h3 {
+    margin-top: 0.5rem;
+  }
+  .hoje h3 a {
+    border: 0;
+  }
+  .hoje h3 small {
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  ul.mov {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ul.mov li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.95rem;
+  }
+  ul.mov li:last-child {
+    border-bottom: 0;
+  }
+  ul.mov .t {
+    flex: 1;
+    min-width: 0;
+  }
+  ul.mov .t small {
+    color: var(--muted);
+    display: block;
+  }
+  ul.mov .n {
+    white-space: nowrap;
+    text-align: right;
+  }
+  .up {
+    color: var(--up);
+  }
+  .down {
+    color: var(--down);
   }
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
     gap: 16px;
     margin: 0 0 2.5rem;
+  }
+  table.lista {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 1.5rem;
+    font-size: 0.95rem;
+  }
+  table.lista th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--line);
+    padding: 6px 12px 6px 0;
+  }
+  table.lista td {
+    padding: 8px 12px 8px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.lista td.n,
+  table.lista th.n {
+    text-align: right;
+    white-space: nowrap;
   }
   .proveniencia {
     border-top: 1px solid var(--line);
@@ -232,5 +389,10 @@ const graph = {
   }
   footer.site .licenca {
     margin: 0;
+  }
+  @media (max-width: 40rem) {
+    table.lista .d {
+      display: none;
+    }
   }
 </style>

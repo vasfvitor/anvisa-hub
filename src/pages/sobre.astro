@@ -1,0 +1,76 @@
+---
+// What each site is, where its data comes from, and what it does not do. One section per site.
+import Base from "../layouts/Base.astro";
+import { ANVISA_CONSULTAS_URL, ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL, REPOS } from "../lib/config";
+
+const description =
+  "O que cada site faz, de onde vêm os dados e o que fica de fora: contém, anvisa.feeds, preços CMED e as tabelas em Parquet.";
+---
+
+<Base title="Sobre" description={description}>
+  <h1>Sobre</h1>
+  <p class="lead">
+    Quatro sites, um dado cada, todos lidos dos arquivos públicos da ANVISA e republicados sem alteração. Projeto
+    independente, código aberto.
+  </p>
+
+  <h2 id="contem">
+    <a href={CONTEM_URL}>contém</a>
+  </h2>
+  <p>
+    Busca de produtos regularizados: alimentos e suplementos, saneantes, cosméticos. Por marca, nome, empresa, CNPJ ou
+    número do rótulo. Uma página por empresa, com os produtos dela e as medidas da ANVISA contra ela.
+  </p>
+  <p class="muted">
+    Fora: medicamentos e dispositivos ainda não estão na busca. A busca roda no navegador; sem JavaScript, use as
+    páginas de empresa.
+  </p>
+
+  <h2 id="feeds">
+    <a href={FEEDS_URL}>anvisa.feeds</a>
+  </h2>
+  <p>
+    As filas de análise de petições, uma por subfila, como feed Atom. Uma coleta por dia pela API oficial; cada entrada
+    diz quem entrou, saiu ou mudou de posição.
+  </p>
+  <p class="muted">
+    Fora: o resultado da análise. "Saiu da fila" só quer dizer que o processo não está mais nela; o despacho está na
+    consulta oficial.
+  </p>
+
+  <h2 id="cmed">
+    <a href={`${FEEDS_URL}cmed/`}>preços CMED</a>
+  </h2>
+  <p>
+    A lista mensal de preços máximos de medicamentos: PF, PMC e PMVG por alíquota de ICMS, uma linha por apresentação.
+    Comparada com a lista anterior a cada mês; um feed por substância e por laboratório.
+  </p>
+  <p class="muted">
+    Fora: preço praticado. São tetos. Em março ou abril a CMED reajusta a lista inteira, e o diff desse mês é quase
+    tudo.
+  </p>
+
+  <h2 id="dados">
+    <a href={DADOS_URL}>dados abertos</a>
+  </h2>
+  <p>
+    Os CSVs de <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a> convertidos todo dia em Parquet tipado e ordenado, com
+    manifest, dicionário e hash. É o que alimenta o contém e a lista da CMED. A lista está em{" "}
+    <a href="/dados/">Dados</a>.
+  </p>
+
+  <h2>Limites</h2>
+  <ul>
+    <li>
+      Nada aqui substitui a <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
+    </li>
+    <li>Os dados têm a data da coleta na página; se a data parar, a coleta falhou e nada é inventado.</li>
+    <li>Sem conta, sem rastreamento, sem JavaScript obrigatório.</li>
+  </ul>
+
+  <h2>Código</h2>
+  <p>
+    <a href={REPOS.api}>anvisa-api</a> (biblioteca e pipeline), <a href={REPOS.dash}>anvisa-dash</a> (contém),
+    <a href={REPOS.feeds}>anvisa-feeds</a> (filas e CMED), <a href={REPOS.hub}>anvisa-hub</a> (esta página). MIT.
+  </p>
+</Base>

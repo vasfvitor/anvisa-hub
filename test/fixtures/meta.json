@@ -11,7 +11,11 @@
   "failed": [],
   "feeds": 319,
   "first_snapshot": "2026-09-06",
-  "catalog": { "areas": 11, "grupos": 62, "subfilas": 319 },
+  "catalog": {
+    "areas": 11,
+    "grupos": 62,
+    "subfilas": 319
+  },
   "base_url": "https://anvisa.feeds.abelhaninja.de",
   "generator": "anvisa-feeds/0.3.0",
   "cmed": {
@@ -22,9 +26,80 @@
     "substancias": 2264,
     "laboratorios": 262,
     "feeds": 2527,
-    "months": 1,
+    "months": 2,
     "first_stamp": "20261009",
-    "events": { "entered": 0, "changed": 0, "left": 0 },
-    "release": "cmed-20261009"
+    "events": {
+      "entered": 12,
+      "changed": 240,
+      "left": 3
+    },
+    "release": "cmed-20261009",
+    "destaques": {
+      "altas": [
+        {
+          "produto": "BAYCUTEN N",
+          "apresentacao": "10 MG/G + 0,443 MG/G CREM DERM CT BG AL X 40 G",
+          "substancia": "21-ACETATO DE DEXAMETASONA;CLOTRIMAZOL",
+          "laboratorio": "BAYER S.A.",
+          "pf_de": 3073,
+          "pf_para": 3380,
+          "variacao": 10.0,
+          "pagina": "https://anvisa.feeds.abelhaninja.de/cmed/substancia/21-acetato-de-dexametasona-clotrimazol.html"
+        }
+      ],
+      "baixas": [
+        {
+          "produto": "PROFLAM",
+          "apresentacao": "100 MG COM REV CT BL AL PLAS INC X 12",
+          "substancia": "ACECLOFENACO",
+          "laboratorio": "EUROFARMA",
+          "pf_de": 3387,
+          "pf_para": 3200,
+          "variacao": -5.5,
+          "pagina": "https://anvisa.feeds.abelhaninja.de/cmed/substancia/aceclofenaco.html"
+        }
+      ],
+      "entradas": [
+        {
+          "produto": "NOVO",
+          "apresentacao": "X",
+          "substancia": "NOVA SUBSTANCIA",
+          "laboratorio": "NOVO LAB",
+          "pf_de": null,
+          "pf_para": 3073,
+          "variacao": null,
+          "pagina": null
+        }
+      ],
+      "saidas": []
+    }
+  },
+  "novidades": {
+    "dia": "2026-10-08",
+    "filas_com_movimento": 41,
+    "entraram": 57,
+    "sairam": 49,
+    "filas": [
+      {
+        "subfila": 1001,
+        "nome": "Registro de medicamento novo",
+        "grupo": "REGISTRO",
+        "area": "Medicamento",
+        "entraram": 6,
+        "sairam": 4,
+        "fila": 120,
+        "pagina": "https://anvisa.feeds.abelhaninja.de/fila/1001.html"
+      },
+      {
+        "subfila": 167,
+        "nome": "Alteração de rotulagem",
+        "grupo": "Alterações",
+        "area": "Dispositivos Médicos",
+        "entraram": 0,
+        "sairam": 3,
+        "fila": 39,
+        "pagina": "https://anvisa.feeds.abelhaninja.de/fila/167.html"
+      }
+    ]
   }
 }

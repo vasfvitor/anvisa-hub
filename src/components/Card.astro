@@ -1,6 +1,5 @@
 ---
-// One product: name, what it answers, the numbers read at build time, and the links. The title is the
-// product's own link; `links` are the secondary ones (OPML, dictionary, PyPI).
+// One product: icon, name, one line on what it answers, the numbers read at build time, the links.
 export interface Stat {
   label: string;
   value: string;
@@ -13,16 +12,28 @@ interface Props {
   title: string;
   href: string;
   blurb: string;
+  /** which inline icon to draw */
+  icon: "busca" | "feed" | "preco" | "tabela";
   stats: Stat[];
   /** shown in place of the stats when the source had no numbers for this build */
   empty?: string;
   links?: Link[];
 }
-const { title, href, blurb, stats, empty, links = [] } = Astro.props;
+const { title, href, blurb, icon, stats, empty, links = [] } = Astro.props;
+const paths: Record<Props["icon"], string> = {
+  busca: "M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm5.3 8.9 4.4 4.4-1.4 1.4-4.4-4.4z",
+  feed: "M4 4a16 16 0 0 1 16 16h-3A13 13 0 0 0 4 7zm0 6a10 10 0 0 1 10 10h-3a7 7 0 0 0-7-7zm2 7a2 2 0 1 1 0 4 2 2 0 0 1 0-4z",
+  preco:
+    "M12 2 2 12l10 10 10-10zm0 2.8L19.2 12 12 19.2 4.8 12zM10 8h4v2h-2.5a1.5 1.5 0 0 0 0 3H13a3.5 3.5 0 0 1 0 7v1h-2v-1H9v-2h3.5a1.5 1.5 0 0 0 0-3H12a3.5 3.5 0 0 1 0-7V7h2z",
+  tabela: "M3 4h18v16H3zm2 2v3h14V6zm0 5v3h6v-3zm8 0v3h6v-3zm-8 5v3h6v-3zm8 0v3h6v-3z",
+};
 ---
 
 <article class="card">
   <h2>
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22">
+      <path d={paths[icon]} fill="currentColor"></path>
+    </svg>
     <a href={href}>{title}</a>
   </h2>
   <p>{blurb}</p>
@@ -51,27 +62,37 @@ const { title, href, blurb, stats, empty, links = [] } = Astro.props;
   .card {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
   h2 {
     margin: 0;
-    font-size: 1.4rem;
+    padding: 0;
+    border: 0;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 svg {
+    color: var(--accent-ink);
+    flex: none;
   }
   h2 a {
     border-bottom-width: 3px;
   }
   p {
     margin: 0;
+    font-size: 0.95rem;
   }
   dl {
-    margin: 0;
+    margin: 4px 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: 10px;
   }
   dl div {
     display: flex;
@@ -79,13 +100,12 @@ const { title, href, blurb, stats, empty, links = [] } = Astro.props;
   }
   dt {
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   dd {
     margin: 0;
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    font-variant-numeric: tabular-nums;
   }
   .vazio {
     color: var(--muted);
@@ -95,6 +115,6 @@ const { title, href, blurb, stats, empty, links = [] } = Astro.props;
     flex-wrap: wrap;
     gap: 6px 16px;
     margin-top: auto;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 </style>
