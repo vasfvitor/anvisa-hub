@@ -2,7 +2,7 @@
 // What each site is, what it leaves out, and the questions people arrive with. The FAQ is visible text
 // and the same text as FAQPage JSON-LD.
 import Base from "../layouts/Base.astro";
-import { ANVISA_CONSULTAS_URL, ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL } from "../lib/config";
+import { ANVISA_CONSULTAS_URL, ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL, PORTAL_URL } from "../lib/config";
 import { AUTHOR } from "../lib/brand";
 
 const title = "Sobre os sites";
@@ -20,7 +20,7 @@ const faq = [
   },
   {
     q: "Onde ver o preço máximo de um medicamento?",
-    a: `Em ${FEEDS_URL}cmed/, por substância ou por laboratório: PF, PMC e PMVG à alíquota 0 % e o que mudou contra a lista anterior. São os tetos da CMED, não o preço praticado.`,
+    a: `Em ${FEEDS_URL}cmed/, por substância ou por laboratório: PF, PMC e PMVG à alíquota 0 % e o que mudou contra a lista anterior. São os tetos da CMED, não o preço praticado. O preço máximo ao consumidor no ICMS de cada estado está em ${PORTAL_URL}remedios/.`,
   },
   {
     q: "Os dados são oficiais?",
@@ -75,7 +75,8 @@ const structured = [
     <section>
       <p>
         <a href={`${FEEDS_URL}cmed/`}>anvisa.feeds.abelhaninja.de/cmed</a> compara a lista mensal de preços máximos de
-        medicamentos com a anterior. Um feed por substância e por laboratório.
+        medicamentos com a anterior. Um feed por substância e por laboratório. O preço máximo ao consumidor de cada
+        apresentação, no ICMS de cada estado, está em <a href={`${PORTAL_URL}remedios/`}>saude.abelhaninja.de</a>.
       </p>
       <p class="muted">Fora: preço praticado. São tetos. Em março ou abril a lista inteira muda.</p>
     </section>

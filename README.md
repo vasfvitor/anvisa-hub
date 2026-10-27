@@ -9,6 +9,8 @@ public data:
   [`anvisa-feeds`](https://github.com/vasfvitor/anvisa-feeds)): the analysis queues as one Atom feed per subfila.
 - **preços CMED** (<https://anvisa.feeds.abelhaninja.de/cmed/>, same repo): CMED's monthly list of maximum
   medicine prices, diffed month over month, as feeds per substância and per laboratório.
+  The consumer view of the same list (the maximum price of each presentation at each state's ICMS rate) is the
+  public health portal <https://saude.abelhaninja.de/remedios/>.
 - **open data** (<https://vasfvitor.github.io/anvisa-api/>, repo
   [`anvisa-api`](https://github.com/vasfvitor/anvisa-api), PyPI [`anvisa`](https://pypi.org/project/anvisa/)):
   ANVISA's CSVs converted to Parquet daily, with a manifest and a data dictionary.

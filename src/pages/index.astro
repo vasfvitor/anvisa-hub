@@ -12,6 +12,7 @@ import {
   DADOS_URL,
   FEEDS_META_URL,
   FEEDS_URL,
+  PORTAL_URL,
   MANIFEST_URL,
 } from "../lib/config";
 import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
@@ -159,6 +160,9 @@ const structured = [
       ) : (
         <p class="resumo">Sem lista neste build.</p>
       )}
+      <p class="resumo">
+        Preço por estado, apresentação por apresentação: <a href={`${PORTAL_URL}remedios/`}>saude.abelhaninja.de</a>
+      </p>
     </div>
     <div>
       <h3>

@@ -11,6 +11,8 @@ export const FEEDS_URL = "https://anvisa.feeds.abelhaninja.de/";
 export const DADOS_URL = "https://vasfvitor.github.io/anvisa-api/";
 export const PYPI_URL = "https://pypi.org/project/anvisa/";
 export const HOME_URL = "https://abelhaninja.de/";
+// the public health portal: the CMED price of each medicine by state, for consumers
+export const PORTAL_URL = "https://saude.abelhaninja.de/";
 export const REPOS = {
   hub: "https://github.com/vasfvitor/anvisa-hub",
   api: "https://github.com/vasfvitor/anvisa-api",
