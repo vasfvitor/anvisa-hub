@@ -79,9 +79,15 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
   const m = raw as Partial<FeedsMeta> | null;
   if (!m || typeof m !== "object") throw new Error("feeds meta: not an object");
   if (typeof m.date !== "string" || typeof m.finished !== "string") throw new Error("feeds meta: no date");
-  for (const k of ["rows", "subfilas_total", "subfilas_crawled"] as const) {
-    if (typeof m[k] !== "number") throw new Error(`feeds meta: no ${k}`);
-  }
+  // checked and typed in one place, so the derived flag below needs no assertion
+  const count = (k: "rows" | "subfilas_total" | "subfilas_crawled"): number => {
+    const v = m[k];
+    if (typeof v !== "number") throw new Error(`feeds meta: no ${k}`);
+    return v;
+  };
+  const rows = count("rows");
+  const total = count("subfilas_total");
+  const crawled = count("subfilas_crawled");
   if (m.cmed !== undefined) {
     const c = m.cmed as Partial<CmedMeta> | null;
     if (!c || typeof c !== "object" || typeof c.stamp !== "string") throw new Error("feeds meta: bad cmed");
@@ -89,7 +95,7 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
       if (typeof c[k] !== "number") throw new Error(`feeds meta: cmed without ${k}`);
     }
   }
-  return { ...m, parcial: m.subfilas_crawled! < m.subfilas_total! } as FeedsMeta;
+  return { ...m, rows, subfilas_total: total, subfilas_crawled: crawled, parcial: crawled < total } as FeedsMeta;
 }
 
 /** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */

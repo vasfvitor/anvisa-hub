@@ -23,6 +23,12 @@ describe("feeds meta", () => {
     expect(parseFeedsMeta(without).cmed).toBeUndefined();
     expect(() => parseFeedsMeta({ ...(fixture as object), cmed: { stamp: "x" } })).toThrow(/cmed without rows/);
   });
+  it("flags a partial crawl, whose rows count only the subfilas that answered", () => {
+    expect(parseFeedsMeta(fixture).parcial).toBe(false); // 319 of 319
+    const parcial = parseFeedsMeta({ ...(fixture as object), subfilas_crawled: 300 });
+    expect(parcial.parcial).toBe(true);
+    expect(parcial.subfilas_crawled).toBe(300);
+  });
   it("rejects a file without the counts", () => {
     expect(() => parseFeedsMeta({ date: "2026-10-08", finished: "x" })).toThrow(/rows/);
     expect(() => parseFeedsMeta(null)).toThrow(/object/);
