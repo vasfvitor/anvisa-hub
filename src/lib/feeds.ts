@@ -89,7 +89,7 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
       if (typeof c[k] !== "number") throw new Error(`feeds meta: cmed without ${k}`);
     }
   }
-  return { ...m, parcial: (m.subfilas_crawled as number) < (m.subfilas_total as number) } as FeedsMeta;
+  return { ...m, parcial: m.subfilas_crawled! < m.subfilas_total! } as FeedsMeta;
 }
 
 /** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */
