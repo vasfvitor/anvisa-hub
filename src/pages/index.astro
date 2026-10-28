@@ -38,10 +38,15 @@ const contemStats: Stat[] = [
   ...stat("empresas", "empresas"),
   ...(loadedAt ? [{ label: "dados de", value: fmtDate(loadedAt) }] : []),
 ];
+// a partial crawl counts only the subfilas that answered: say so instead of showing a smaller total as whole
+const parcial = feeds && feeds.subfilas_crawled < feeds.subfilas_total;
 const feedsStats: Stat[] = feeds
   ? [
       { label: "filas", value: fmtInt(feeds.subfilas_total) },
-      { label: "na fila", value: fmtInt(feeds.rows) },
+      {
+        label: parcial ? `na fila, em ${fmtInt(feeds.subfilas_crawled)} filas coletadas` : "na fila",
+        value: fmtInt(feeds.rows),
+      },
       { label: "coleta", value: fmtDateTime(feeds.finished) },
     ]
   : [];
