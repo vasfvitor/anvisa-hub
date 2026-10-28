@@ -11,6 +11,8 @@ export interface FeedsMeta {
   rows: number;
   subfilas_total: number;
   subfilas_crawled: number;
+  /** derived here: fewer subfilas answered than exist, so `rows` is not the whole queue */
+  parcial: boolean;
   /** subfilas with a feed */
   feeds?: number;
   first_snapshot?: string;
@@ -87,7 +89,7 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
       if (typeof c[k] !== "number") throw new Error(`feeds meta: cmed without ${k}`);
     }
   }
-  return m as FeedsMeta;
+  return { ...m, parcial: (m.subfilas_crawled as number) < (m.subfilas_total as number) } as FeedsMeta;
 }
 
 /** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */
