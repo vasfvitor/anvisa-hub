@@ -148,8 +148,9 @@ workflows do repo.
 
 O `Publish site` roda em push no `main`, à mão, e três vezes por dia (09:30, 22:30 e 01:30 UTC). Nos
 horários fixos, o job `verify` compara o `build_id` do manifest do anvisa-api e a data do `meta.json` do
-anvisa-feeds com `/build.json` do site. Só publica quando um deles mudou. Se não conseguir ler algum,
-publica mesmo assim.
+anvisa-feeds com `/build.json` do site. Só publica quando um deles mudou. Se não conseguir ler algum dos
+dois, não publica e deixa um aviso amarelo (ver [Fonte não abriu no verify](#fonte-não-abriu-no-verify)).
+Se quem não abre é o `/build.json` do próprio site, publica.
 
 O manifest é obrigatório. O `meta.json` do feeds é opcional. Em qualquer falha do build, **o site anterior
 continua no ar**.
@@ -159,10 +160,23 @@ continua no ar**.
 - **Onde aparece:** passo Build (ou `check`).
 - **Mensagens:** `manifest: HTTP 503 at https://vasfvitor.github.io/anvisa-api/manifest.json`, ou
   `TypeError: fetch failed`.
-- **O que quer dizer:** o manifest não abriu. Enquanto isso durar, o `verify` também não consegue ler e
-  manda publicar, então o run pode ficar vermelho três vezes por dia.
+- **O que quer dizer:** o manifest não abriu durante o build. Isso só aparece num push ou num "Run
+  workflow": nos horários fixos, o `verify` para antes, com o aviso amarelo.
 - **Agir ou esperar:** esperar. Ver o
   [RUNBOOK do anvisa-api](https://github.com/vasfvitor/anvisa-api/blob/main/RUNBOOK.md).
+
+### Fonte não abriu no verify
+
+- **Onde aparece:** job `verify`, como aviso amarelo. O run fica verde e o build não roda.
+- **Mensagem:** `::warning::could not read the build_id of the anvisa-api manifest; not publishing, the site keeps its current build`.
+  Ou `the date of the anvisa-feeds meta.json`, ou os dois.
+- **O que quer dizer:** num horário fixo, o manifest do anvisa-api ou o `meta.json` do anvisa-feeds não
+  abriu, ou veio sem a data. O hub não publica: o build falharia, ou sairia com os cards do feeds vazios.
+- **O site foi afetado?** Não. Segue com o build anterior, que fica velho enquanto isso durar.
+- **Agir ou esperar:** esperar. O próximo horário tenta de novo, e o alarme do produtor diz o motivo: ver
+  o RUNBOOK do [anvisa-api](https://github.com/vasfvitor/anvisa-api/blob/main/RUNBOOK.md) ou do
+  [anvisa-feeds](https://github.com/vasfvitor/anvisa-feeds/blob/main/RUNBOOK.md).
+- **Pedir ajuda quando:** o aviso se repetir por mais de um dia com o produtor verde.
 
 ### Contrato de uma fonte mudou
 
@@ -214,9 +228,9 @@ dos dados (fase 5 do plano de manutenção).
   tabela.
 - **`falhas` ignorado.** Uma tabela que o anvisa-api manteve do build anterior aparece como se estivesse
   em dia.
-- **Feeds fora do ar publica cards vazios, com o run verde.** Se o `meta.json` do anvisa-feeds não abrir,
-  o hub publica assim mesmo, com "Resumo ainda não publicado.", "Sem resumo neste build." e afins. O
-  próximo horário volta ao normal, depois que o feeds voltar.
+- **Feeds fora do ar publica cards vazios num push.** Num push ou num "Run workflow", se o `meta.json`
+  do anvisa-feeds não abrir, o hub publica assim mesmo, com "Resumo ainda não publicado.", "Sem resumo
+  neste build." e afins. Nos horários fixos isso não acontece mais, porque o `verify` não publica.
 - **Ninguém vigia se o hub e o contém estão em dia.** Se o cron deles parar, nenhum outro workflow fica
   vermelho. O portal tem esse alarme (no ans-feeds); estes dois, não.
 - **keepalive verde sem ter feito nada.** Ver [keepalive](#keepalive).
