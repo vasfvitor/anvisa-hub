@@ -57,6 +57,11 @@ describe("feeds meta", () => {
     );
     expect(statNaFila(parseFeedsMeta({ ...(fixture as object), subfilas_crawled: 0, rows: 0 }))).toBeNull();
   });
+  it("reads the contract version when anvisa-feeds publishes it, and fails on one it does not know", () => {
+    expect(parseFeedsMeta(fixture).date).toBe("2026-10-08"); // the fixture predates the key
+    expect(parseFeedsMeta({ ...(fixture as object), schema_version: 1 }).date).toBe("2026-10-08");
+    expect(() => parseFeedsMeta({ ...(fixture as object), schema_version: 2 })).toThrow(/schema_version 2/);
+  });
   it("rejects a file without the counts", () => {
     expect(() => parseFeedsMeta({ date: "2026-10-08", finished: "x" })).toThrow(/rows/);
     expect(() => parseFeedsMeta(null)).toThrow(/object/);

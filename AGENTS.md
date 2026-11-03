@@ -13,7 +13,8 @@ git-ignored `NOTES.local.md` holds pending items when present.
 - The feeds summary `meta.json` is written by `anvisa-feeds` (`feeds.py`, build step). Its keys are the
   snapshot meta plus `feeds`, `first_snapshot`, `catalog`, `base_url`, `generator`, `novidades` (the day's
   busiest subfilas) and `cmed` (the price list's month, counts, `destaques`). A change there needs a
-  follow-up in `src/lib/feeds.ts` and `test/fixtures/meta.json`.
+  follow-up in `src/lib/feeds.ts` and `test/fixtures/meta.json`. `schema_version` (absent before 2026-11,
+  then 1) is checked there: another value fails the build until the contract change is read.
 - Copy is short and plain: no filler, no slogans. The three questions (está liberado? em que posição?
   quanto pode custar?) are the only recurring phrasing.
 - `public/og.png` is rendered by `pnpm og` (`scripts/og.mjs`, sharp from astro's pnpm folder) and committed;

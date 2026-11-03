@@ -79,6 +79,10 @@ export interface CmedMeta {
 export function parseFeedsMeta(raw: unknown): FeedsMeta {
   const m = raw as Partial<FeedsMeta> | null;
   if (!m || typeof m !== "object") throw new Error("feeds meta: not an object");
+  // the contract version anvisa-feeds publishes (as the anvisa-api manifest does): absent, from before the key,
+  // or 1 reads; another means the fields may have moved, so the build says so
+  const versao = (m as { schema_version?: unknown }).schema_version;
+  if (versao !== undefined && versao !== 1) throw new Error(`feeds meta: schema_version ${JSON.stringify(versao)}`);
   if (typeof m.date !== "string" || typeof m.finished !== "string") throw new Error("feeds meta: no date");
   // checked and typed in one place, so the derived flag below needs no assertion
   const count = (k: "rows" | "subfilas_total" | "subfilas_crawled"): number => {
