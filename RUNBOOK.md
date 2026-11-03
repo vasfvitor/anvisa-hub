@@ -63,8 +63,8 @@ Alarmes que ficam vermelhos num repo por causa de outro:
   vermelho, achar a entrada no RUNBOOK pela mensagem. Vermelho conhecido em 03/11/2026: o `dados` do
   anvisa-api fica vermelho todo dia porque a ANVISA não atualiza oito arquivos desde 13/10/2026.
 - **Todo mês, no dia 1 ou 2.**
-  - Conferir os quatro `keepalive` (anvisa-api, anvisa-dash, portal-saude, anvisa-hub): verdes e com
-    linhas `enabled` no log. Ver [keepalive](#keepalive).
+  - Conferir os quatro `keepalive` (anvisa-api, anvisa-dash, portal-saude, anvisa-hub): verdes. Ver
+    [keepalive](#keepalive).
   - Conferir o `drift` do anvisa-api, que roda nos dias 1 e 15.
 - **A cada 6 meses.** Revisar a tabela de ICMS do portal (`src/lib/icms.ts`). A próxima revisão vence em
   abril de 2027.
@@ -140,9 +140,8 @@ workflow".
 Roda no dia 1 de cada mês, às 07:41 UTC, nos quatro repos que não fazem commit pelo CI. Reativa os
 workflows do repo.
 
-- **Vermelho:** uma chamada à API do GitHub falhou. Rodar de novo.
-- **Verde:** abrir o log e conferir as linhas `enabled .github/workflows/...`. Se não houver nenhuma, ele
-  não fez nada. É um problema conhecido: se a primeira chamada falhar, o passo sai verde mesmo assim.
+- **Vermelho:** uma chamada à API do GitHub falhou (a mensagem do `gh` diz qual). Rodar de novo.
+- **Verde:** reativou os workflows. O log tem uma linha `enabled .github/workflows/...` para cada um.
 
 ## anvisa-hub
 
@@ -233,4 +232,3 @@ dos dados (fase 5 do plano de manutenção).
   neste build." e afins. Nos horários fixos isso não acontece mais, porque o `verify` não publica.
 - **Ninguém vigia se o hub e o contém estão em dia.** Se o cron deles parar, nenhum outro workflow fica
   vermelho. O portal tem esse alarme (no ans-feeds); estes dois, não.
-- **keepalive verde sem ter feito nada.** Ver [keepalive](#keepalive).
