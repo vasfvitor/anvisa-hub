@@ -1,6 +1,7 @@
 // Contract with `anvisa-feeds`: its build writes `meta.json` at the site root, the latest crawl's meta
 // (same keys as snapshots/<day>.meta.json) plus totals. The file is newer than the hub's first deploy,
 // so a missing file is tolerated: the feeds card then shows the link without numbers.
+import { fmtInt } from "./format";
 
 export interface FeedsMeta {
   /** crawl day, YYYY-MM-DD */
@@ -88,14 +89,65 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
   const rows = count("rows");
   const total = count("subfilas_total");
   const crawled = count("subfilas_crawled");
+  // the optional blocks are checked as deep as index.astro reads them, so a drifted file fails here, named, instead
+  // of with a TypeError in the middle of the page
   if (m.cmed !== undefined) {
     const c = m.cmed as Partial<CmedMeta> | null;
-    if (!c || typeof c !== "object" || typeof c.stamp !== "string") throw new Error("feeds meta: bad cmed");
-    for (const k of ["rows", "substancias", "laboratorios"] as const) {
+    if (!isObj(c) || typeof c.stamp !== "string") throw new Error("feeds meta: bad cmed");
+    for (const k of ["rows", "substancias", "laboratorios", "months"] as const) {
       if (typeof c[k] !== "number") throw new Error(`feeds meta: cmed without ${k}`);
     }
+    if (!isObj(c.events) || !numbers(c.events, ["entered", "changed", "left"]))
+      throw new Error("feeds meta: cmed without events");
+    if (c.destaques !== undefined) {
+      const d = c.destaques as Record<string, unknown> | null;
+      for (const k of ["altas", "baixas", "entradas", "saidas"]) {
+        const lista = isObj(d) ? d[k] : undefined;
+        if (!Array.isArray(lista) || !lista.every(isHighlight)) throw new Error(`feeds meta: bad cmed destaques ${k}`);
+      }
+    }
+  }
+  if (m.novidades !== undefined) {
+    const n = m.novidades as Partial<Novidades> | null;
+    if (!isObj(n) || typeof n.dia !== "string" || !numbers(n, ["filas_com_movimento", "entraram", "sairam"]))
+      throw new Error("feeds meta: bad novidades");
+    if (!Array.isArray(n.filas) || !n.filas.every(isMover)) throw new Error("feeds meta: bad novidades filas");
   }
   return { ...m, rows, subfilas_total: total, subfilas_crawled: crawled, parcial: crawled < total } as FeedsMeta;
+}
+
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
+const numbers = (o: object, keys: string[]): boolean =>
+  keys.every((k) => typeof (o as Record<string, unknown>)[k] === "number");
+const strOrNull = (v: unknown): boolean => v === null || typeof v === "string";
+const numOrNull = (v: unknown): boolean => v === null || typeof v === "number";
+// the fields the home prints of each highlight and each busiest subfila
+const isHighlight = (h: unknown): boolean =>
+  isObj(h) &&
+  strOrNull(h.produto) &&
+  strOrNull(h.apresentacao) &&
+  strOrNull(h.pagina) &&
+  numOrNull(h.variacao) &&
+  numOrNull(h.pf_para);
+const isMover = (f: unknown): boolean =>
+  isObj(f) &&
+  typeof f.nome === "string" &&
+  typeof f.area === "string" &&
+  typeof f.pagina === "string" &&
+  numbers(f, ["entraram", "sairam"]);
+
+/**
+ * The "na fila" stat of the home: null when the crawl read no subfila, since its 0 was never measured and the page
+ * says so in words; on a partial crawl the label says how many subfilas answered, since `rows` counts only those.
+ */
+export function statNaFila(
+  m: Pick<FeedsMeta, "rows" | "subfilas_crawled" | "parcial">,
+): { label: string; value: string } | null {
+  if (m.subfilas_crawled === 0) return null;
+  return {
+    label: m.parcial ? `na fila, em ${fmtInt(m.subfilas_crawled)} filas coletadas` : "na fila",
+    value: fmtInt(m.rows),
+  };
 }
 
 /** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */

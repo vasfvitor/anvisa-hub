@@ -12,7 +12,7 @@ import {
   PYPI_URL,
   REPOS,
 } from "../lib/config";
-import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
+import { feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
 import { besideManifest, manifestForBuild } from "../lib/manifest";
 
@@ -24,9 +24,11 @@ export const GET: APIRoute = async () => {
         `- ${name}: ${fmtInt(t.rows)} linhas${t.source.loaded_at ? `, dados de ${fmtDate(t.source.loaded_at)}` : ""}`,
     )
     .join("\n");
-  const feedsLine = feeds
-    ? `${fmtInt(feeds.subfilas_total)} subfilas, ${fmtInt(feeds.rows)} processos na fila na coleta de ${fmtDateTime(feeds.finished)}${feeds.parcial ? ` (só ${fmtInt(feeds.subfilas_crawled)} subfilas responderam nessa coleta)` : ""}.`
-    : "O resumo das filas (meta.json) ainda não estava publicado neste build.";
+  const feedsLine = !feeds
+    ? "O resumo das filas (meta.json) ainda não estava publicado neste build."
+    : statNaFila(feeds)
+      ? `${fmtInt(feeds.subfilas_total)} subfilas, ${fmtInt(feeds.rows)} processos na fila na coleta de ${fmtDateTime(feeds.finished)}${feeds.parcial ? ` (só ${fmtInt(feeds.subfilas_crawled)} subfilas responderam nessa coleta)` : ""}.`
+      : `${fmtInt(feeds.subfilas_total)} subfilas; nenhuma respondeu na coleta de ${fmtDateTime(feeds.finished)}, então não há contagem de processos na fila.`;
   const cmedLine = feeds?.cmed
     ? `${fmtInt(feeds.cmed.rows)} apresentações de ${fmtInt(feeds.cmed.substancias)} substâncias e ${fmtInt(feeds.cmed.laboratorios)} laboratórios na lista de ${fmtDate(stampToDate(feeds.cmed.stamp))}.`
     : "Ainda sem lista guardada neste build.";

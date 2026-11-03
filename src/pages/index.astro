@@ -15,7 +15,7 @@ import {
   PORTAL_URL,
   MANIFEST_URL,
 } from "../lib/config";
-import { feedsMetaForBuild, stampToDate } from "../lib/feeds";
+import { feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt, fmtMoney, fmtPct } from "../lib/format";
 import { besideManifest, latestLoadedAt, manifestForBuild } from "../lib/manifest";
 
@@ -41,11 +41,8 @@ const contemStats: Stat[] = [
 const feedsStats: Stat[] = feeds
   ? [
       { label: "filas", value: fmtInt(feeds.subfilas_total) },
-      {
-        // a partial crawl counts only the subfilas that answered: said, not shown as the whole total
-        label: feeds.parcial ? `na fila, em ${fmtInt(feeds.subfilas_crawled)} filas coletadas` : "na fila",
-        value: fmtInt(feeds.rows),
-      },
+      // a crawl that read no subfila measured nothing: said in words, not shown as 0
+      statNaFila(feeds) ?? { label: "na fila: nenhuma fila respondeu nesta coleta", value: "—" },
       { label: "coleta", value: fmtDateTime(feeds.finished) },
     ]
   : [];
