@@ -17,6 +17,12 @@ public data:
 
 The page is pt-BR; code, comments and this README are English. Product names stay as each product spells them.
 
+## When something breaks
+
+[RUNBOOK.md](RUNBOOK.md) (in Portuguese) is the entry point for all six repos: who reads whom, the
+schedules, the routine checks and what each red run means. Each repo keeps its own `RUNBOOK.md` with its
+messages.
+
 ## Where the numbers come from
 
 Nothing on the page is typed by hand. At build time the site reads two files and renders what they say:

@@ -30,3 +30,8 @@ Commit when a unit of work is complete, one subject per commit, no attribution t
 SSH-signed, so `git commit` runs outside the sandbox: keep it as the only command on its line. Run
 `git status --short` first and `git add` any new file the change needs. Pushing, Pages settings and
 repository secrets are the user's.
+
+`RUNBOOK.md` (Portuguese, for the user, not for an agent) is the entry point of the six repos' runbooks: the
+map, the schedules, the routine and what applies to all, then this repo's own entries. Adding or changing an
+alarm or an error message here, or a schedule or dependency between the repos, means updating it in the same
+commit, quoting messages exactly as the log prints them.
