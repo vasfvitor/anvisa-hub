@@ -47,21 +47,24 @@ outro. Por isso, um problema num produtor costuma aparecer vermelho também nos 
 | portal-saude: `Publish site`, `keepalive`                     | [RUNBOOK do portal](https://github.com/vasfvitor/portal-saude/blob/main/RUNBOOK.md)       |
 | anvisa-hub: `Publish site`, `keepalive`                       | [Este arquivo, seção anvisa-hub](#anvisa-hub)                                             |
 
-Alarmes que ficam vermelhos num repo por causa de outro:
+Alarmes que aparecem num repo por causa de outro:
 
-| Onde fica vermelho | Mensagem                                                                 | O problema está em                    |
-| ------------------ | ------------------------------------------------------------------------ | ------------------------------------- |
-| anvisa-feeds       | `went out without the registration status`, `without the official names` | anvisa-api                            |
-| ans-feeds          | `the portal could not be read or is more than 2 days behind`             | portal-saude                          |
-| contém             | `Testes ao vivo` (qualquer)                                              | anvisa-api mudou algo que o contém lê |
-| contém, hub        | `manifest: HTTP`                                                         | anvisa-api fora do ar                 |
-| portal             | `HTTP ... at https://ans.feeds...` ou `https://anvisa.feeds...`          | ans-feeds ou anvisa-feeds             |
+| Onde aparece | Alarme                                                                             | O problema está em                    |
+| ------------ | ---------------------------------------------------------------------------------- | ------------------------------------- |
+| anvisa-feeds | issue "O cmed/dados saiu sem os dados do anvisa-api"                               | anvisa-api                            |
+| ans-feeds    | issue "Portal N dias atrás dos dados da ANS" ou "O build.json do portal não abriu" | portal-saude                          |
+| contém       | `Testes ao vivo` (qualquer)                                                        | anvisa-api mudou algo que o contém lê |
+| contém, hub  | `manifest: HTTP`                                                                   | anvisa-api fora do ar                 |
+| portal       | `HTTP ... at https://ans.feeds...` ou `https://anvisa.feeds...`                    | ans-feeds ou anvisa-feeds             |
 
 ## Rotina
 
-- **Toda semana, uns 5 minutos.** Abrir a aba Actions de cada repo e ver o que ficou vermelho. Para cada
-  vermelho, achar a entrada no RUNBOOK pela mensagem. Vermelho conhecido em 03/11/2026: o `dados` do
-  anvisa-api fica vermelho todo dia porque a ANVISA não atualiza oito arquivos desde 13/10/2026.
+- **Toda semana, uns 5 minutos.**
+  - Ver as [issues de alerta abertas](https://github.com/search?q=user%3Avasfvitor+label%3Aalerta+is%3Aopen&type=issues) nos seis repos. Cada uma linka para a entrada do
+    RUNBOOK. A primeira esperada, em novembro de 2026, é "ANVISA parada", com os oito arquivos sem
+    atualizar desde 13/10/2026.
+  - Abrir a aba Actions de cada repo e ver o que ficou vermelho. Vermelho agora quer dizer que algo pede
+    ação. Para cada vermelho, achar a entrada no RUNBOOK pela mensagem.
 - **Todo mês, no dia 1 ou 2.**
   - Conferir os quatro `keepalive` (anvisa-api, anvisa-dash, portal-saude, anvisa-hub): verdes. Ver
     [keepalive](#keepalive).
@@ -74,6 +77,25 @@ Alarmes que ficam vermelhos num repo por causa de outro:
 O e-mail de falha de um run agendado vai para quem editou por último a linha do cron daquele workflow.
 
 ## O que vale para todos
+
+### Issues de alerta
+
+Um problema de causa conhecida, que está fora do código, não deixa o run vermelho. Por exemplo: a ANVISA
+parou de atualizar um arquivo, um download falhou, a ANS não publicou o CADOP. O workflow abre uma issue
+com o label `alerta`, e o run fica verde, com um aviso amarelo.
+
+- **Uma issue por tipo de alerta,** com a lista do que está acontecendo (as tabelas, as fontes) e o link
+  para a entrada do RUNBOOK que diz o que fazer.
+- **O GitHub manda e-mail duas vezes:** quando a issue abre e quando ela fecha. Enquanto continua aberta,
+  ela é atualizada em silêncio a cada run.
+- **Ela fecha sozinha,** com um comentário "Normalizou em <data>", no primeiro run em que o problema não
+  aparece mais. Se voltar, abre uma issue nova. O histórico fica nas issues fechadas.
+- **Não feche à mão uma issue aberta:** se o problema continuar, o próximo run abre outra.
+- **Todas as abertas, nos seis repos:** [busca no GitHub](https://github.com/search?q=user%3Avasfvitor+label%3Aalerta+is%3Aopen&type=issues).
+
+Quem abre e fecha as issues é a action `.github/actions/alerta` deste repo. O anvisa-api, o anvisa-feeds e
+o ans-feeds a usam direto do `main` daqui. Se ela falhar, o passo "Alarm issue for ..." fica vermelho no
+repo que a chamou: rodar de novo; se repetir, pedir ajuda.
 
 ### Rodar de novo
 
