@@ -90,7 +90,8 @@ com o label `alerta`, e o run fica verde, com um aviso amarelo.
   ela é atualizada em silêncio a cada run.
 - **Ela fecha sozinha,** com um comentário "Normalizou em <data>", no primeiro run em que o problema não
   aparece mais. Se voltar, abre uma issue nova. O histórico fica nas issues fechadas.
-- **Não feche à mão uma issue aberta:** se o problema continuar, o próximo run abre outra.
+- **Não feche à mão uma issue aberta, nem tire o label `alerta` dela:** a action só reconhece as issues
+  abertas com esse label. Se o problema continuar, o próximo run abre outra.
 - **Todas as abertas, nos seis repos:** [busca no GitHub](https://github.com/search?q=user%3Avasfvitor+label%3Aalerta+is%3Aopen&type=issues).
 
 Quem abre e fecha as issues é a action `.github/actions/alerta` deste repo. O anvisa-api, o anvisa-feeds e
