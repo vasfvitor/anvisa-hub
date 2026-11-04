@@ -13,6 +13,7 @@ const SCRIPT = join(import.meta.dirname, "..", ".github", "actions", "alerta", "
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
 echo "$1 $2" >> "$FAKE_DIR/calls.txt"
+[ "$1 $2" = "issue list" ] && echo "$*" > "$FAKE_DIR/list.txt"
 args=("$@")
 for i in "\${!args[@]}"; do
   case "\${args[$i]}" in
@@ -32,6 +33,7 @@ interface Resultado {
   chamadas: string[];
   corpo: string;
   titulo: string;
+  listagem: string;
 }
 
 function rodar(estado: string, issues: { number: number; body: string }[] = []): Resultado {
@@ -61,6 +63,7 @@ function rodar(estado: string, issues: { number: number; body: string }[] = []):
     chamadas: ler("calls.txt").split("\n").filter(Boolean),
     corpo: ler("body.txt"),
     titulo: ler("title.txt"),
+    listagem: ler("list.txt"),
   };
 }
 
@@ -97,6 +100,13 @@ describe("alerta.sh", () => {
     expect(r.status).toBe(0);
     expect(r.chamadas).toEqual(["issue list", "issue edit"]);
     expect(r.corpo).toContain("- alimentos: 21 dias");
+  });
+
+  it("looks only at open issues labelled alerta", () => {
+    // only people with access to the repo can label an issue: an outsider's copy of the marker is ignored
+    const r = rodar("normal");
+    expect(r.listagem).toContain("--state open");
+    expect(r.listagem).toContain("--label alerta");
   });
 
   it("opens its own issue when only another alarm's is open", () => {

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Opens, updates or closes the issue of one alarm. action.yml passes ALERTA_CHAVE, ALERTA_TITULO,
 # ALERTA_ESTADO (ativo, normal or empty), ALERTA_CORPO, ALERTA_RUNBOOK, ALERTA_RUN, GH_REPO and the
-# token. One open issue per key, found by the marker in its body (the listing API, not the search,
-# which lags). No reminders: the issue mails once when it opens and once when it closes; while it
-# stays open its body is updated in place, which sends nothing.
+# token. One open issue per key, found by the marker in its body among the open issues labelled
+# `alerta` (the listing API, not the search, which lags). Only people with access to the repo can
+# label an issue, so an outsider's issue that copies the marker is never taken for the alarm.
+# No reminders: the issue mails once when it opens and once when it closes; while it stays
+# open its body is updated in place, which sends nothing.
 set -euo pipefail
 
 chave=${ALERTA_CHAVE:?}
@@ -21,7 +23,7 @@ case "${ALERTA_ESTADO:-}" in
     ;;
 esac
 
-numero=$(gh issue list --state open --limit 100 --json number,body |
+numero=$(gh issue list --state open --label alerta --limit 100 --json number,body |
   jq -r --arg m "$marca" 'map(select(.body | contains($m))) | .[0].number // empty')
 
 if [ "$ALERTA_ESTADO" = normal ]; then
