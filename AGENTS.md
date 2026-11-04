@@ -23,6 +23,9 @@ git-ignored `NOTES.local.md` holds pending items when present.
   spelled as the products spell them: contém, anvisa.feeds, anvisa-api.
 - Numbers are never hand-typed. If a stat cannot be read from a source, the card says so.
 - No client JavaScript: `pnpm build` must leave no `<script>` other than JSON-LD in `dist/`.
+- `.github/actions/alerta` (composite action, `alerta.sh`) opens, updates and closes the alarm issues of
+  anvisa-api, anvisa-feeds and ans-feeds, which call it at `@main`: a change here reaches their next run with
+  no commit there. `test/alerta.test.ts` (a fake `gh`) is its gate; keep its inputs backward compatible.
 
 ## Workflow
 

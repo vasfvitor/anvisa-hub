@@ -1,0 +1,47 @@
+name: alerta
+description: >-
+  Opens, updates and closes the issue of a known-cause alarm, one issue per key, so the run stays
+  green while the problem is outside our code (a source that stopped, a download that failed). Used
+  by anvisa-api, anvisa-feeds and ans-feeds through vasfvitor/anvisa-hub/.github/actions/alerta@main;
+  the caller job needs `issues: write`. The behaviour is tested in test/alerta.test.ts.
+
+inputs:
+  chave:
+    description: Stable id of the alarm; the issue is found by a marker with it in its body.
+    required: true
+  titulo:
+    description: Issue title, in Portuguese.
+    required: true
+  estado:
+    description: >-
+      `ativo` opens or updates the issue, `normal` closes it, empty changes nothing (the check did
+      not run, for instance because an earlier step failed).
+    required: false
+    default: ""
+  corpo:
+    description: Markdown with what was seen (the tables, the sources, the numbers).
+    required: false
+    default: ""
+  runbook:
+    description: URL of the RUNBOOK entry that says what to do.
+    required: true
+  token:
+    description: Token with issues write on the calling repository.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Open, update or close the issue
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        GH_REPO: ${{ github.repository }}
+        ALERTA_CHAVE: ${{ inputs.chave }}
+        ALERTA_TITULO: ${{ inputs.titulo }}
+        ALERTA_ESTADO: ${{ inputs.estado }}
+        ALERTA_CORPO: ${{ inputs.corpo }}
+        ALERTA_RUNBOOK: ${{ inputs.runbook }}
+        ALERTA_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: bash "$GITHUB_ACTION_PATH/alerta.sh"
