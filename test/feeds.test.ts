@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchFeedsMeta, parseFeedsMeta, stampToDate, statNaFila } from "../src/lib/feeds";
+import { coletaParada, fetchFeedsMeta, parseFeedsMeta, stampToDate, statNaFila } from "../src/lib/feeds";
 import { fmtInt } from "../src/lib/format";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/meta.json", import.meta.url), "utf-8")) as unknown;
@@ -56,6 +56,14 @@ describe("feeds meta", () => {
       "na fila, em 300 filas coletadas",
     );
     expect(statNaFila(parseFeedsMeta({ ...(fixture as object), subfilas_crawled: 0, rows: 0 }))).toBeNull();
+  });
+  it("names a crawl that stopped more than 36 h before the build, and stays quiet before that", () => {
+    const m = { finished: "2026-10-08T13:11:43-03:00" };
+    expect(coletaParada(m, new Date("2026-10-09T13:11:43-03:00"))).toBeNull(); // 24 h
+    expect(coletaParada(m, new Date("2026-10-09T23:00:00-03:00"))).toBeNull(); // under 36 h
+    expect(coletaParada(m, new Date("2026-10-10T02:00:00-03:00"))).toBe(
+      "A coleta das filas está parada: a última terminou em 08/10/2026, 13:11.",
+    );
   });
   it("reads the contract version when anvisa-feeds publishes it, and fails on one it does not know", () => {
     expect(parseFeedsMeta(fixture).date).toBe("2026-10-08"); // the fixture predates the key

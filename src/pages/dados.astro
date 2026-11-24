@@ -36,8 +36,8 @@ const structured = [
 <Base title={title} description={description} structured={structured}>
   <h1>{title}</h1>
   <p class="lead">
-    {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build de {fmtDate(manifest.built_at)}. Convertidas todo dia
-    dos CSVs da ANVISA, tipadas e ordenadas.
+    {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build do anvisa-api de {fmtDate(manifest.built_at)}: os
+    CSVs da ANVISA convertidos para Parquet, com tipos nas colunas e linhas ordenadas.
   </p>
   <table class="lista">
     <thead>
@@ -45,7 +45,7 @@ const structured = [
         <th>Tabela</th>
         <th class="d">Uma linha é</th>
         <th class="n">Linhas</th>
-        <th class="n">Origem</th>
+        <th class="n">Carga da ANVISA</th>
       </tr>
     </thead>
     <tbody>
@@ -56,16 +56,16 @@ const structured = [
           </td>
           <td class="d">{t.title ?? ""}</td>
           <td class="n">{fmtInt(t.rows)}</td>
-          <td class="n">{t.source.loaded_at ? fmtDate(t.source.loaded_at) : "–"}</td>
+          <td class="n">{t.source.loaded_at ? fmtDate(t.source.loaded_at) : "sem data no arquivo"}</td>
         </tr>
       ))}
     </tbody>
   </table>
   <h2>Como usar</h2>
   <p class="nota">
-    Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest.json</a> tem os endereços atuais, as
-    colunas e o sha256 de cada um. O <a href={docsUrl}>dicionário de dados</a> descreve cada coluna em português. DuckDB
-    lê um Parquet direto da URL; em Python, o pacote <a href={PYPI_URL}>anvisa</a> no PyPI é o cliente da API e o
+    Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest.json</a> tem os endereços deste build,
+    as colunas e o sha256 de cada um. O <a href={docsUrl}>dicionário de dados</a> descreve cada coluna em português.
+    DuckDB lê um Parquet direto da URL; em Python, o pacote <a href={PYPI_URL}>anvisa</a> no PyPI é o cliente da API e o
     pipeline que gera estes arquivos. A listagem completa está no <a href={DADOS_URL}>GitHub Pages do anvisa-api</a>.
   </p>
 </Base>

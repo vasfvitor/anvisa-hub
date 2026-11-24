@@ -1,5 +1,5 @@
 ---
-// The home: a search box, what moved today, four cards. Every number is read at build time from the
+// The home: a search box, the latest changes of each source, four cards. Every number is read at build time from the
 // manifest of anvisa-api and the meta.json of anvisa-feeds; nothing is typed by hand.
 import Card from "../components/Card.astro";
 import type { Stat } from "../components/Card.astro";
@@ -14,31 +14,32 @@ import {
   PORTAL_URL,
   MANIFEST_URL,
 } from "../lib/config";
-import { feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
+import { coletaParada, feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt, fmtMoney, fmtPct } from "../lib/format";
-import { besideManifest, latestLoadedAt, manifestForBuild, tableStat } from "../lib/manifest";
+import { besideManifest, cargaStat, manifestForBuild, tableStat } from "../lib/manifest";
 
 const manifest = await manifestForBuild(MANIFEST_URL);
 const feeds = await feedsMetaForBuild(FEEDS_META_URL);
 
 const tables = manifest.tables;
-const loadedAt = latestLoadedAt(manifest);
 const cmed = feeds?.cmed;
 const novidades = feeds?.novidades;
+// computed when the page is built: a stopped crawl is said, not left for the reader to infer from the date
+const parada = feeds ? coletaParada(feeds, new Date()) : null;
 const altas = cmed?.destaques?.altas.filter((h) => h.variacao !== null && h.variacao > 0) ?? [];
 const baixas = cmed?.destaques?.baixas.filter((h) => h.variacao !== null && h.variacao < 0) ?? [];
 
 const contemStats: Stat[] = [
   tableStat(manifest, "produtos", "produtos"),
   tableStat(manifest, "empresas", "empresas"),
-  ...(loadedAt ? [{ label: "dados de", value: fmtDate(loadedAt) }] : []),
+  cargaStat(manifest, ["produtos", "empresas"]),
 ];
 const feedsStats: Stat[] = feeds
   ? [
       { label: "filas", value: fmtInt(feeds.subfilas_total) },
       // a crawl that read no subfila measured nothing: said in words, not shown as 0
       statNaFila(feeds) ?? { label: "na fila: nenhuma fila respondeu nesta coleta", value: "—" },
-      { label: "coleta", value: fmtDateTime(feeds.finished) },
+      { label: parada ? "última coleta, parada" : "coleta", value: fmtDateTime(feeds.finished) },
     ]
   : [];
 const cmedStats: Stat[] = cmed
@@ -77,7 +78,7 @@ const structured = [
 
 <Base title={TITLE} description={DESCRIPTION} structured={structured}>
   <h1>{TITLE}</h1>
-  <p class="lead">Produtos, filas e preços, lidos todo dia dos arquivos públicos da ANVISA.</p>
+  <p class="lead">Produtos, filas e preços, lidos dos arquivos públicos da ANVISA.</p>
 
   <form class="busca" action={CONTEM_URL} method="get" role="search">
     <label class="sr-only" for="q">
@@ -92,13 +93,14 @@ const structured = [
     <a href={`${CONTEM_URL}empresas/`}>Empresas de A a Z</a>
   </nav>
 
-  <h2>Hoje</h2>
-  <section class="hoje" aria-label="Mudanças mais recentes">
+  <h2>Últimas mudanças</h2>
+  <section class="hoje" aria-label="Últimas mudanças de cada fonte">
     <div>
       <h3>
         <a href={FEEDS_URL}>Filas</a>
-        {novidades && <small>{fmtDate(novidades.dia)}</small>}
+        {novidades && <small>coleta de {fmtDate(novidades.dia)}</small>}
       </h3>
+      {parada && <p class="resumo">{parada}</p>}
       {novidades ? (
         <>
           <p class="resumo">
@@ -128,7 +130,7 @@ const structured = [
     <div>
       <h3>
         <a href={`${FEEDS_URL}cmed/`}>Preços CMED</a>
-        {cmed && <small>{fmtDate(stampToDate(cmed.stamp))}</small>}
+        {cmed && <small>lista de {fmtDate(stampToDate(cmed.stamp))}</small>}
       </h3>
       {cmed && cmed.months > 1 ? (
         <>
@@ -163,9 +165,9 @@ const structured = [
     <div>
       <h3>
         <a href="/dados/">Tabelas</a>
-        <small>build {fmtDate(manifest.built_at)}</small>
+        <small>build de {fmtDate(manifest.built_at)}</small>
       </h3>
-      <p class="resumo">Origem mais recente</p>
+      <p class="resumo">Cargas da ANVISA mais recentes</p>
       <ul class="mov">
         {recentes.map(([name, t]) => (
           <li>
@@ -191,7 +193,6 @@ const structured = [
       href={CONTEM_URL}
       blurb="Está liberado? Alimentos, suplementos, saneantes e cosméticos."
       stats={contemStats}
-      empty="Sem números neste build."
       links={[{ href: `${CONTEM_URL}empresas/`, text: "empresas" }]}
     />
     <Card
@@ -221,7 +222,6 @@ const structured = [
       href={DADOS_URL}
       blurb="As tabelas em Parquet, com dicionário."
       stats={dadosStats}
-      empty="Sem números neste build."
       links={[
         { href: "/dados/", text: "tabelas" },
         { href: docsUrl, text: "dicionário" },

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { besideManifest, latestLoadedAt, parseManifest, tableStat } from "../src/lib/manifest";
+import { besideManifest, cargaStat, parseManifest, tableStat } from "../src/lib/manifest";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/manifest.json", import.meta.url), "utf-8")) as unknown;
 const base = fixture as { tables: Record<string, unknown> };
@@ -30,10 +30,15 @@ describe("manifest", () => {
     };
     expect(Object.keys(parseManifest({ ...base, tables }).tables)).toEqual(["alimentos"]);
   });
-  it("finds the most recent loaded_at, ignoring null", () => {
-    expect(latestLoadedAt(parseManifest(fixture))).toBe("2026-10-06");
-    const only = { ...base, tables: { empresas: base.tables.empresas } };
-    expect(latestLoadedAt(parseManifest(only))).toBeNull();
+  it("gives the oldest ANVISA load date of the card's tables, and says so in words when one has none", () => {
+    const m = parseManifest(fixture);
+    // alimentos 05/10, produtos 06/10: the oldest, not the latest across the manifest
+    expect(cargaStat(m, ["alimentos", "produtos"])).toEqual({ label: "carga da ANVISA", value: "05/10/2026" });
+    // a table missing from the build is left to its own stat
+    expect(cargaStat(m, ["produtos", "cosmeticos"])).toEqual({ label: "carga da ANVISA", value: "06/10/2026" });
+    const semData = { label: "carga da ANVISA: sem data no arquivo", value: "—" };
+    expect(cargaStat(m, ["produtos", "empresas"])).toEqual(semData); // empresas has loaded_at null
+    expect(cargaStat(m, ["cosmeticos"])).toEqual(semData);
   });
   it("gives a table's rows as a stat, and says so when the table is missing", () => {
     const m = parseManifest(fixture);

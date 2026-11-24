@@ -12,7 +12,7 @@ import {
   PYPI_URL,
   REPOS,
 } from "../lib/config";
-import { feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
+import { coletaParada, feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
 import { besideManifest, manifestForBuild } from "../lib/manifest";
 
@@ -21,7 +21,7 @@ export const GET: APIRoute = async () => {
   const tables = Object.entries(m.tables)
     .map(
       ([name, t]) =>
-        `- ${name}: ${fmtInt(t.rows)} linhas${t.source.loaded_at ? `, dados de ${fmtDate(t.source.loaded_at)}` : ""}`,
+        `- ${name}: ${fmtInt(t.rows)} linhas${t.source.loaded_at ? `, carga da ANVISA de ${fmtDate(t.source.loaded_at)}` : ""}`,
     )
     .join("\n");
   const feedsLine = !feeds
@@ -29,6 +29,7 @@ export const GET: APIRoute = async () => {
     : statNaFila(feeds)
       ? `${fmtInt(feeds.subfilas_total)} subfilas, ${fmtInt(feeds.rows)} processos na fila na coleta de ${fmtDateTime(feeds.finished)}${feeds.parcial ? ` (só ${fmtInt(feeds.subfilas_crawled)} subfilas responderam nessa coleta)` : ""}.`
       : `${fmtInt(feeds.subfilas_total)} subfilas; nenhuma respondeu na coleta de ${fmtDateTime(feeds.finished)}, então não há contagem de processos na fila.`;
+  const parada = feeds ? coletaParada(feeds, new Date()) : null;
   const cmedLine = feeds?.cmed
     ? `${fmtInt(feeds.cmed.rows)} apresentações de ${fmtInt(feeds.cmed.substancias)} substâncias e ${fmtInt(feeds.cmed.laboratorios)} laboratórios na lista de ${fmtDate(stampToDate(feeds.cmed.stamp))}.`
     : "Ainda sem lista guardada neste build.";
@@ -37,7 +38,7 @@ export const GET: APIRoute = async () => {
 
 > ${TITLE}. ${DESCRIPTION} Projeto de Virtuaires, sem vínculo com a ANVISA; não substitui a consulta oficial em ${ANVISA_CONSULTAS_URL}.
 
-Páginas deste site: / (busca, o que mudou hoje, os quatro sites), /dados/ (todas as tabelas do manifest, com linhas e data da origem), /sobre/ (o que cada site faz, o que fica de fora, perguntas frequentes).
+Páginas deste site: / (busca, as últimas mudanças de cada fonte, os quatro sites), /dados/ (todas as tabelas do manifest, com linhas e data da carga da ANVISA), /sobre/ (o que cada site faz, o que fica de fora, perguntas frequentes).
 
 Respostas curtas: está liberado? busque no contém. Em que posição está? assine o feed da subfila em anvisa.feeds e filtre pelo processo. Quanto pode custar? a lista da CMED, por substância, em anvisa.feeds/cmed. Os valores são os que a ANVISA publica; os CSVs são convertidos para Parquet, e as entradas, saídas e mudanças são calculadas pelo anvisa.feeds.
 
@@ -47,7 +48,7 @@ ${CONTEM_URL}: busca de alimentos, suplementos, produtos de limpeza e cosmético
 
 ## anvisa.feeds
 
-${FEEDS_URL}: as filas de análise de petições da ANVISA, um feed Atom por subfila, com o que entrou, saiu e mudou de posição a cada dia. Todas as filas em ${FEEDS_URL}feeds.opml; cada fila também em JSON (${FEEDS_URL}fila/<id>.json); resumo em ${FEEDS_URL}meta.json. ${feedsLine} Código: ${REPOS.feeds}
+${FEEDS_URL}: as filas de análise de petições da ANVISA, um feed Atom por subfila, com o que entrou, saiu e mudou de posição de uma coleta para a seguinte. Todas as filas em ${FEEDS_URL}feeds.opml; cada fila também em JSON (${FEEDS_URL}fila/<id>.json); resumo em ${FEEDS_URL}meta.json. ${feedsLine}${parada ? ` ${parada}` : ""} Código: ${REPOS.feeds}
 
 ## preços CMED
 
@@ -55,7 +56,7 @@ ${FEEDS_URL}cmed/: a lista mensal de preços máximos de medicamentos da CMED (P
 
 ## dados abertos (anvisa-api)
 
-${DADOS_URL}: os CSVs de ${ANVISA_DADOS_URL} convertidos em Parquet, build ${m.build_id} de ${fmtDate(m.built_at)}. O manifest (${MANIFEST_URL}) lista os arquivos atuais, com caminho, linhas, colunas, sha256 e origem; os caminhos mudam a cada build. Dicionário de dados: ${besideManifest(MANIFEST_URL, m.docs ?? "dicionario.html")}. Biblioteca Python: ${PYPI_URL} (cliente da API Consultas Externas e o pipeline dos dados). Código: ${REPOS.api}
+${DADOS_URL}: os CSVs de ${ANVISA_DADOS_URL} convertidos em Parquet, build ${m.build_id} de ${fmtDate(m.built_at)}. O manifest (${MANIFEST_URL}) lista os arquivos deste build, com caminho, linhas, colunas, sha256 e origem; os caminhos mudam a cada build. Dicionário de dados: ${besideManifest(MANIFEST_URL, m.docs ?? "dicionario.html")}. Biblioteca Python: ${PYPI_URL} (cliente da API Consultas Externas e o pipeline dos dados). Código: ${REPOS.api}
 
 ${tables}
 `;

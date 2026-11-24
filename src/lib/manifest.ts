@@ -1,7 +1,7 @@
 // Contract with the `anvisa-api` pipeline (manifest schema_version 1), reduced to what the hub shows:
 // build id and time, generator, docs link and, per table, title, rows and the source's load date.
 // Table paths change every build and are never used here; the hub links the Pages index instead.
-import { fmtInt } from "./format";
+import { fmtDate, fmtInt } from "./format";
 
 export interface Source {
   name: string;
@@ -49,12 +49,17 @@ export function parseManifest(raw: unknown): Manifest {
   return { ...(m as Manifest), tables };
 }
 
-/** The most recent `loaded_at` across the tables, or null when no table carries one. */
-export function latestLoadedAt(m: Manifest): string | null {
-  const dates = Object.values(m.tables)
-    .map((t) => t.source.loaded_at)
-    .filter((d): d is string => typeof d === "string" && d.length > 0);
-  return dates.length ? dates.reduce((a, b) => (a > b ? a : b)) : null;
+/**
+ * The ANVISA load date (`loaded_at`, the ETL date in its files) of the named tables, as a card stat: the oldest of
+ * them, so the stat never makes one table look newer than it is. A table missing from the build is left to its own
+ * stat; a present one without a date makes the stat say so in words.
+ */
+export function cargaStat(m: Manifest, names: string[]): { label: string; value: string } {
+  const present = names.map((n) => m.tables[n]).filter((t): t is Table => t !== undefined);
+  const dates = present.map((t) => t.source.loaded_at);
+  if (!present.length || !dates.every((d): d is string => typeof d === "string" && d.length > 0))
+    return { label: "carga da ANVISA: sem data no arquivo", value: "—" };
+  return { label: "carga da ANVISA", value: fmtDate(dates.reduce((a, b) => (a < b ? a : b))) };
 }
 
 /**

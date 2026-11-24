@@ -1,7 +1,7 @@
 // Contract with `anvisa-feeds`: its build writes `meta.json` at the site root, the latest crawl's meta
 // (same keys as snapshots/<day>.meta.json) plus totals. The file is newer than the hub's first deploy,
 // so a missing file is tolerated: the feeds card then shows the link without numbers.
-import { fmtInt } from "./format";
+import { fmtDateTime, fmtInt } from "./format";
 
 export interface FeedsMeta {
   /** crawl day, YYYY-MM-DD */
@@ -152,6 +152,20 @@ export function statNaFila(
     label: m.parcial ? `na fila, em ${fmtInt(m.subfilas_crawled)} filas coletadas` : "na fila",
     value: fmtInt(m.rows),
   };
+}
+
+/** Hours after the end of the last crawl past which the crawl counts as stopped (one missed run plus margin). */
+export const PARADA_HORAS = 36;
+
+/**
+ * The sentence that names a stopped crawl, or null while it runs: computed at build time from `finished`, so the
+ * reader does not have to notice that the date stopped moving.
+ */
+export function coletaParada(m: Pick<FeedsMeta, "finished">, now: Date): string | null {
+  const horas = (now.getTime() - Date.parse(m.finished)) / 3_600_000;
+  return horas > PARADA_HORAS
+    ? `A coleta das filas está parada: a última terminou em ${fmtDateTime(m.finished)}.`
+    : null;
 }
 
 /** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */

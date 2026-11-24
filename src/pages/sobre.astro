@@ -2,8 +2,26 @@
 // What each site is, what it leaves out, and the questions people arrive with. The FAQ is visible text
 // and the same text as FAQPage JSON-LD.
 import Base from "../layouts/Base.astro";
-import { ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL, PORTAL_URL } from "../lib/config";
+import {
+  ANVISA_DADOS_URL,
+  CONTEM_URL,
+  DADOS_URL,
+  FEEDS_META_URL,
+  FEEDS_URL,
+  MANIFEST_URL,
+  PORTAL_URL,
+} from "../lib/config";
 import { AUTHOR } from "../lib/brand";
+import { coletaParada, feedsMetaForBuild } from "../lib/feeds";
+import { fmtDate, fmtDateTime } from "../lib/format";
+import { manifestForBuild } from "../lib/manifest";
+
+const manifest = await manifestForBuild(MANIFEST_URL);
+const feeds = await feedsMetaForBuild(FEEDS_META_URL);
+// the state of the last crawl, computed when the page is built: a stopped crawl is said in words
+const coleta = !feeds
+  ? "O resumo das filas (meta.json) não estava publicado neste build."
+  : (coletaParada(feeds, new Date()) ?? `A última coleta terminou em ${fmtDateTime(feeds.finished)}.`);
 
 const title = "Sobre os sites";
 const description =
@@ -16,7 +34,7 @@ const faq = [
   },
   {
     q: "Como acompanhar a fila de análise de um processo?",
-    a: `Em anvisa.feeds (${FEEDS_URL}) cada subfila tem uma página com a fila inteira e um feed Atom. Assine o feed da sua subfila e filtre pelo número do processo; as entradas dizem quem entrou, saiu ou mudou de posição a cada dia.`,
+    a: `Em anvisa.feeds (${FEEDS_URL}) cada subfila tem uma página com a fila inteira e um feed Atom. Assine o feed da sua subfila e filtre pelo número do processo; as entradas dizem quem entrou, saiu ou mudou de posição de uma coleta para a seguinte.`,
   },
   {
     q: "Onde ver o preço máximo de um medicamento?",
@@ -66,7 +84,7 @@ const structured = [
     <section>
       <p>
         <a href={FEEDS_URL}>anvisa.feeds.abelhaninja.de</a> mostra as filas de análise de petições, uma por subfila,
-        como feed Atom. Uma coleta por dia; cada entrada diz quem entrou, saiu ou mudou de posição.
+        como feed Atom. Cada entrada compara uma coleta com a anterior: quem entrou, saiu ou mudou de posição. {coleta}
       </p>
       <p class="muted">Fora: o resultado da análise. "Saiu da fila" não diz se foi deferido.</p>
     </section>
@@ -85,8 +103,8 @@ const structured = [
     <section>
       <p>
         <a href={DADOS_URL}>Parquet no GitHub Pages</a>: os CSVs de <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a>,
-        convertidos todo dia, com manifest, dicionário e hash. É o que alimenta os outros três. A lista está em{" "}
-        <a href="/dados/">Dados</a>.
+        convertidos para Parquet pelo anvisa-api (build de {fmtDate(manifest.built_at)}), com manifest, dicionário e
+        hash. É o que alimenta os outros três. A lista está em <a href="/dados/">Dados</a>.
       </p>
     </section>
 
@@ -103,8 +121,8 @@ const structured = [
     <h2>Limites</h2>
     <section>
       <p>
-        Cada página mostra a data da coleta; se a data parar, a coleta falhou e nada é inventado. O site não usa cookies
-        nem análise de acesso.
+        Cada página mostra a data da cópia que usa; quando a coleta das filas para, o início e esta página dizem desde
+        quando. O site não usa cookies nem análise de acesso.
       </p>
       <p class="muted">
         Projeto de <a href={AUTHOR.url}>{AUTHOR.name}</a>, código aberto sob MIT. Repositórios no rodapé.
