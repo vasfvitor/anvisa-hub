@@ -7,7 +7,8 @@ export const TITLE = "ANVISA em dados abertos";
 export const DESCRIPTION =
   "Produtos regularizados, filas de análise, preços da CMED e as tabelas em Parquet. Dados públicos da ANVISA, com a data de cada coleta.";
 
-export const DISCLAIMER = "Sem vínculo com a ANVISA ou a CMED. A consulta oficial continua valendo.";
+// the footer follows it with the link to the official consultation
+export const DISCLAIMER = "Sem vínculo com a ANVISA ou a CMED.";
 
 export const AUTHOR = { name: "Virtuaires", url: "https://virtuaires.com.br" };
 

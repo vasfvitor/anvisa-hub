@@ -35,11 +35,11 @@ export const GET: APIRoute = async () => {
 
   const text = `# ${NAME}
 
-> ${TITLE}. ${DESCRIPTION} Projeto de Virtuaires, sem vínculo com a ANVISA: para qualquer decisão, confira a consulta oficial em ${ANVISA_CONSULTAS_URL}.
+> ${TITLE}. ${DESCRIPTION} Projeto de Virtuaires, sem vínculo com a ANVISA; não substitui a consulta oficial em ${ANVISA_CONSULTAS_URL}.
 
 Páginas deste site: / (busca, o que mudou hoje, os quatro sites), /dados/ (todas as tabelas do manifest, com linhas e data da origem), /sobre/ (o que cada site faz, o que fica de fora, perguntas frequentes).
 
-Respostas curtas: está liberado? busque no contém. Em que posição está? assine o feed da subfila em anvisa.feeds e filtre pelo processo. Quanto pode custar? a lista da CMED, por substância, em anvisa.feeds/cmed. Tudo é dado público da ANVISA, republicado sem alteração, e nada substitui a consulta oficial.
+Respostas curtas: está liberado? busque no contém. Em que posição está? assine o feed da subfila em anvisa.feeds e filtre pelo processo. Quanto pode custar? a lista da CMED, por substância, em anvisa.feeds/cmed. Os valores são os que a ANVISA publica; os CSVs são convertidos para Parquet, e as entradas, saídas e mudanças são calculadas pelo anvisa.feeds.
 
 ## contém
 

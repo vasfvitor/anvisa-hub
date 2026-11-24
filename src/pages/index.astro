@@ -6,7 +6,6 @@ import type { Stat } from "../components/Card.astro";
 import Base from "../layouts/Base.astro";
 import { DESCRIPTION, TITLE } from "../lib/brand";
 import {
-  ANVISA_CONSULTAS_URL,
   ANVISA_DADOS_URL,
   CONTEM_URL,
   DADOS_URL,
@@ -235,8 +234,7 @@ const structured = [
   </section>
 
   <p class="nota">
-    Fonte: <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a> e a API Consultas Externas. Nada aqui substitui a{" "}
-    <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>.
+    Fonte: <a href={ANVISA_DADOS_URL}>dados.anvisa.gov.br</a> e a API Consultas Externas.
   </p>
 </Base>
 

@@ -3,7 +3,7 @@
 // site nav, footer with the repositories. No client JavaScript anywhere on the site.
 // Astro drops a line break between text and a tag: keep inline links on the same line as their text.
 import Logo from "../components/Logo.astro";
-import { CONTEM_URL, HOME_URL, REPOS } from "../lib/config";
+import { ANVISA_CONSULTAS_URL, CONTEM_URL, HOME_URL, REPOS } from "../lib/config";
 import { AUTHOR, DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
 
 interface Props {
@@ -113,7 +113,9 @@ const graph = {
       <slot />
     </main>
     <footer class="site">
-      <p class="aviso">{DISCLAIMER}</p>
+      <p class="aviso">
+        {DISCLAIMER} Não substitui a consulta oficial em <a href={ANVISA_CONSULTAS_URL}>consultas.anvisa.gov.br</a>.
+      </p>
       <nav aria-label="Repositórios">
         <a href={REPOS.api}>anvisa-api</a>
         <a href={REPOS.dash}>anvisa-dash</a>
@@ -122,7 +124,8 @@ const graph = {
         <a href={HOME_URL}>abelhaninja.de</a>
       </nav>
       <p class="licenca">
-        Código MIT. Dados da ANVISA e da CMED, sem alteração. <a href={AUTHOR.url}>{AUTHOR.name}</a>.
+        Código MIT. Valores como a ANVISA e a CMED publicam; entradas, saídas e mudanças calculadas pelo anvisa.feeds.{" "}
+        <a href={AUTHOR.url}>{AUTHOR.name}</a>.
       </p>
     </footer>
   </body>

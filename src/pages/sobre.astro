@@ -2,12 +2,12 @@
 // What each site is, what it leaves out, and the questions people arrive with. The FAQ is visible text
 // and the same text as FAQPage JSON-LD.
 import Base from "../layouts/Base.astro";
-import { ANVISA_CONSULTAS_URL, ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL, PORTAL_URL } from "../lib/config";
+import { ANVISA_DADOS_URL, CONTEM_URL, DADOS_URL, FEEDS_URL, PORTAL_URL } from "../lib/config";
 import { AUTHOR } from "../lib/brand";
 
 const title = "Sobre os sites";
 const description =
-  "O que cada site faz e o que fica de fora: contém (produtos regularizados), anvisa.feeds (filas de análise), preços CMED (lista mensal) e as tabelas em Parquet. Dados públicos da ANVISA, sem alteração.";
+  "O que cada site faz e o que fica de fora: contém (produtos regularizados), anvisa.feeds (filas de análise), preços CMED (lista mensal) e as tabelas em Parquet, com os valores como a ANVISA publica.";
 const site = Astro.site!.href;
 const faq = [
   {
@@ -24,7 +24,7 @@ const faq = [
   },
   {
     q: "Os dados são oficiais?",
-    a: `São os arquivos públicos da ANVISA (dados.anvisa.gov.br e a API Consultas Externas), republicados sem alteração e com a data de cada coleta. O site não tem vínculo com a ANVISA e não substitui a consulta oficial em ${ANVISA_CONSULTAS_URL}.`,
+    a: `São cópias dos arquivos públicos da ANVISA (dados.anvisa.gov.br e a API Consultas Externas), com a data de cada coleta, feitas por um projeto sem vínculo com a ANVISA. Os valores são os que a ANVISA publica; os CSVs são convertidos para Parquet, e as entradas, saídas e mudanças são calculadas pelo anvisa.feeds, comparando cada coleta com a anterior.`,
   },
 ];
 const structured = [
@@ -49,7 +49,7 @@ const structured = [
 <Base title={title} description={description} structured={structured}>
   <div class="sobre">
     <h1>{title}</h1>
-    <p class="lead">Quatro sites, um dado cada, lidos dos arquivos públicos da ANVISA e republicados sem alteração.</p>
+    <p class="lead">Quatro sites, um dado cada, lidos dos arquivos públicos da ANVISA.</p>
 
     <h2>contém</h2>
     <section>
@@ -103,8 +103,8 @@ const structured = [
     <h2>Limites</h2>
     <section>
       <p>
-        Nada aqui substitui a <a href={ANVISA_CONSULTAS_URL}>consulta oficial</a>. Cada página mostra a data da coleta;
-        se a data parar, a coleta falhou e nada é inventado. Sem conta, sem rastreamento.
+        Cada página mostra a data da coleta; se a data parar, a coleta falhou e nada é inventado. O site não usa cookies
+        nem análise de acesso.
       </p>
       <p class="muted">
         Projeto de <a href={AUTHOR.url}>{AUTHOR.name}</a>, código aberto sob MIT. Repositórios no rodapé.
