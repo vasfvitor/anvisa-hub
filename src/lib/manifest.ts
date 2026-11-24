@@ -1,6 +1,7 @@
 // Contract with the `anvisa-api` pipeline (manifest schema_version 1), reduced to what the hub shows:
 // build id and time, generator, docs link and, per table, title, rows and the source's load date.
 // Table paths change every build and are never used here; the hub links the Pages index instead.
+import { fmtInt } from "./format";
 
 export interface Source {
   name: string;
@@ -54,6 +55,15 @@ export function latestLoadedAt(m: Manifest): string | null {
     .map((t) => t.source.loaded_at)
     .filter((d): d is string => typeof d === "string" && d.length > 0);
   return dates.length ? dates.reduce((a, b) => (a > b ? a : b)) : null;
+}
+
+/**
+ * The row count of one table as a card stat. A table missing from this build keeps its stat, which
+ * says so in words instead of vanishing from the card.
+ */
+export function tableStat(m: Manifest, label: string, name: string): { label: string; value: string } {
+  const t = m.tables[name];
+  return t ? { label, value: fmtInt(t.rows) } : { label: `${label}: sem dado neste build`, value: "—" };
 }
 
 /** Absolute URL of a file published beside the manifest (the Pages index, the data dictionary). */

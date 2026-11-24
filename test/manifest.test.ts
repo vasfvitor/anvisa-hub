@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { besideManifest, latestLoadedAt, parseManifest } from "../src/lib/manifest";
+import { besideManifest, latestLoadedAt, parseManifest, tableStat } from "../src/lib/manifest";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/manifest.json", import.meta.url), "utf-8")) as unknown;
 const base = fixture as { tables: Record<string, unknown> };
@@ -34,6 +34,14 @@ describe("manifest", () => {
     expect(latestLoadedAt(parseManifest(fixture))).toBe("2026-10-06");
     const only = { ...base, tables: { empresas: base.tables.empresas } };
     expect(latestLoadedAt(parseManifest(only))).toBeNull();
+  });
+  it("gives a table's rows as a stat, and says so when the table is missing", () => {
+    const m = parseManifest(fixture);
+    expect(tableStat(m, "produtos", "produtos")).toEqual({ label: "produtos", value: "98.765" });
+    expect(tableStat(m, "cosmeticos", "cosmeticos")).toEqual({
+      label: "cosmeticos: sem dado neste build",
+      value: "—",
+    });
   });
   it("resolves a file beside the manifest", () => {
     expect(besideManifest("https://vasfvitor.github.io/anvisa-api/manifest.json", "dicionario.html")).toBe(

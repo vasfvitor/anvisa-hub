@@ -16,16 +16,12 @@ import {
 } from "../lib/config";
 import { feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt, fmtMoney, fmtPct } from "../lib/format";
-import { besideManifest, latestLoadedAt, manifestForBuild } from "../lib/manifest";
+import { besideManifest, latestLoadedAt, manifestForBuild, tableStat } from "../lib/manifest";
 
 const manifest = await manifestForBuild(MANIFEST_URL);
 const feeds = await feedsMetaForBuild(FEEDS_META_URL);
 
 const tables = manifest.tables;
-const stat = (label: string, name: string): Stat[] => {
-  const t = tables[name];
-  return t ? [{ label, value: fmtInt(t.rows) }] : [];
-};
 const loadedAt = latestLoadedAt(manifest);
 const cmed = feeds?.cmed;
 const novidades = feeds?.novidades;
@@ -33,8 +29,8 @@ const altas = cmed?.destaques?.altas.filter((h) => h.variacao !== null && h.vari
 const baixas = cmed?.destaques?.baixas.filter((h) => h.variacao !== null && h.variacao < 0) ?? [];
 
 const contemStats: Stat[] = [
-  ...stat("produtos", "produtos"),
-  ...stat("empresas", "empresas"),
+  tableStat(manifest, "produtos", "produtos"),
+  tableStat(manifest, "empresas", "empresas"),
   ...(loadedAt ? [{ label: "dados de", value: fmtDate(loadedAt) }] : []),
 ];
 const feedsStats: Stat[] = feeds
