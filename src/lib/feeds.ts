@@ -167,8 +167,15 @@ export function statNaFila(
   };
 }
 
-/** Hours after the end of the last crawl past which the crawl counts as stopped (one missed run plus margin). */
+/**
+ * Hours after the end of the last crawl past which the crawl counts as stopped (one missed run plus margin).
+ * scripts/verify.sh holds the same number to republish the site once it passes; test/verify.test.ts checks both.
+ */
 export const PARADA_HORAS = 36;
+
+let agora: Date | undefined;
+/** The build's clock, read once, so every page and /build.json agree on whether the crawl had stopped. */
+export const agoraDoBuild = (): Date => (agora ??= new Date());
 
 /**
  * The sentence that names a stopped crawl, or null while it runs: computed at build time from `finished`, so the

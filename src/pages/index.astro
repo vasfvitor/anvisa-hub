@@ -17,6 +17,7 @@ import {
   MANIFEST_URL,
 } from "../lib/config";
 import {
+  agoraDoBuild,
   coletaParada,
   comparacaoFila,
   comparacaoNovidades,
@@ -36,7 +37,7 @@ const novidades = feeds?.novidades;
 // which collection the day's entries and exits are counted against, when anvisa-feeds says
 const comparacao = novidades ? comparacaoNovidades(novidades) : null;
 // computed when the page is built: a stopped crawl is said, not left for the reader to infer from the date
-const parada = feeds ? coletaParada(feeds, new Date()) : null;
+const parada = feeds ? coletaParada(feeds, agoraDoBuild()) : null;
 const altas = cmed?.destaques?.altas.filter((h) => h.variacao !== null && h.variacao > 0) ?? [];
 const baixas = cmed?.destaques?.baixas.filter((h) => h.variacao !== null && h.variacao < 0) ?? [];
 

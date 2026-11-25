@@ -12,7 +12,7 @@ import {
   PORTAL_URL,
 } from "../lib/config";
 import { AUTHOR } from "../lib/brand";
-import { coletaParada, feedsMetaForBuild } from "../lib/feeds";
+import { agoraDoBuild, coletaParada, feedsMetaForBuild } from "../lib/feeds";
 import { fmtDate, fmtDateTime } from "../lib/format";
 import { manifestForBuild } from "../lib/manifest";
 
@@ -21,7 +21,7 @@ const feeds = await feedsMetaForBuild(FEEDS_META_URL);
 // the state of the last crawl, computed when the page is built: a stopped crawl is said in words
 const coleta = !feeds
   ? "O resumo das filas (meta.json) não estava publicado neste build."
-  : (coletaParada(feeds, new Date()) ?? `A última coleta terminou em ${fmtDateTime(feeds.finished)}.`);
+  : (coletaParada(feeds, agoraDoBuild()) ?? `A última coleta terminou em ${fmtDateTime(feeds.finished)}.`);
 
 const title = "Sobre os sites";
 const description =

@@ -169,10 +169,14 @@ workflows do repo.
 ## anvisa-hub
 
 O `Publish site` roda em push no `main`, à mão, e três vezes por dia (09:30, 22:30 e 01:30 UTC). Nos
-horários fixos, o job `verify` compara o `build_id` do manifest do anvisa-api e a data do `meta.json` do
-anvisa-feeds com `/build.json` do site. Só publica quando um deles mudou. Se não conseguir ler algum dos
-dois, não publica e deixa um aviso amarelo (ver [Fonte não abriu no verify](#fonte-não-abriu-no-verify)).
-Se quem não abre é o `/build.json` do próprio site, publica.
+horários fixos, o job `verify` (`scripts/verify.sh`) compara o `build_id` do manifest do anvisa-api e a data
+do `meta.json` do anvisa-feeds com `/build.json` do site. Publica quando um deles mudou. Publica também uma
+vez quando a última coleta do anvisa-feeds terminou há mais de 36 horas e o `/build.json` ainda não tem
+`"coleta_parada": true`: é esse build que faz o início dizer que a coleta está parada. O log diz
+`the anvisa-feeds crawl stopped (last one finished <data>); publishing so the site says so`. Fora isso,
+não publica. Se não conseguir ler algum dos dois, não publica e deixa um aviso amarelo (ver
+[Fonte não abriu no verify](#fonte-não-abriu-no-verify)). Se quem não abre é o `/build.json` do próprio
+site, publica.
 
 O manifest é obrigatório. O `meta.json` do feeds é opcional. Em qualquer falha do build, **o site anterior
 continua no ar**.

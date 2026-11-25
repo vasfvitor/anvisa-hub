@@ -35,15 +35,17 @@ Nothing on the page is typed by hand. At build time the site reads two files and
 The manifest is required: a bad or missing one fails the build, so the previous deploy stays live. The feeds
 summary is optional: when it is missing the feeds card shows the link and a note, and the build goes on.
 
-`/build.json` records which manifest `build_id` and which feeds `date` the deploy was built from;
+`/build.json` records which manifest `build_id` and which feeds `date` the deploy was built from, and
+`coleta_parada`, whether the crawl had stopped (no crawl for over 36 h) at build time;
 `/llms.txt` repeats the page for assistants and agents.
 
 ## Rebuild schedule
 
 `.github/workflows/pages.yml` runs on push, on manual dispatch and on three crons (09:30, 22:30 and 01:30
-UTC). On a cron it first compares the two live files with `/build.json` and only rebuilds when one of them
-moved. After the build, `pnpm check:dist` fails on client JavaScript or on a phrase of `frases-proibidas.txt`
-in the built text. The custom domain comes from `public/CNAME` plus the repository's Pages settings.
+UTC). On a cron it first compares the two live files with `/build.json` (`scripts/verify.sh`) and only
+rebuilds when one of them moved, or once when the crawl has stopped and `coleta_parada` is not true yet, so
+the home says so. After the build, `pnpm check:dist` fails on client JavaScript or on a phrase of
+`frases-proibidas.txt` in the built text. The custom domain comes from `public/CNAME` plus the repository's Pages settings.
 
 ## Development
 

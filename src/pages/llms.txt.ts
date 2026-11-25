@@ -12,7 +12,7 @@ import {
   PYPI_URL,
   REPOS,
 } from "../lib/config";
-import { coletaParada, feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
+import { agoraDoBuild, coletaParada, feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
 import { besideManifest, columnCount, manifestForBuild } from "../lib/manifest";
 
@@ -29,7 +29,7 @@ export const GET: APIRoute = async () => {
     : statNaFila(feeds)
       ? `${fmtInt(feeds.subfilas_total)} subfilas, ${fmtInt(feeds.rows)} processos na fila na coleta de ${fmtDateTime(feeds.finished)}${feeds.parcial ? ` (só ${fmtInt(feeds.subfilas_crawled)} subfilas responderam nessa coleta)` : ""}.`
       : `${fmtInt(feeds.subfilas_total)} subfilas; nenhuma respondeu na coleta de ${fmtDateTime(feeds.finished)}, então não há contagem de processos na fila.`;
-  const parada = feeds ? coletaParada(feeds, new Date()) : null;
+  const parada = feeds ? coletaParada(feeds, agoraDoBuild()) : null;
   const cmedLine = feeds?.cmed
     ? `${fmtInt(feeds.cmed.rows)} apresentações de ${fmtInt(feeds.cmed.substancias)} substâncias e ${fmtInt(feeds.cmed.laboratorios)} laboratórios na lista de ${fmtDate(stampToDate(feeds.cmed.stamp))}.`
     : "Ainda sem lista guardada neste build.";
