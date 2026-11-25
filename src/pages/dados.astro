@@ -67,7 +67,7 @@ const structured = [
       ))}
     </tbody>
   </table>
-  <Relato class="nota" pagina={new URL(Astro.url.pathname, site).href} titulo={title} />
+  <Relato class="nota" titulo={title} />
   <h2>Como usar</h2>
   <p class="nota">
     Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest.json</a> tem os endereços deste build,

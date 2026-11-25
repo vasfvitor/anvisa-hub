@@ -6,8 +6,8 @@ import { RELATO_EMAIL } from "../lib/config";
 import { relatoLinks } from "../lib/relato";
 
 interface Props {
-  /** the page's canonical absolute URL */
-  pagina: string;
+  /** the page's canonical absolute URL (the default, as Base.astro builds it); "" when the URL says nothing */
+  pagina?: string;
   /** what the page is about, with its identifier; empty when the page is not about one item */
   item?: string;
   /** the page title, used in the issue title when there is no item */
@@ -15,7 +15,13 @@ interface Props {
   curto?: boolean;
   class?: string;
 }
-const { pagina, item = "", titulo, curto = false, class: className } = Astro.props;
+const {
+  pagina = new URL(Astro.url.pathname, Astro.site).href,
+  item = "",
+  titulo,
+  curto = false,
+  class: className,
+} = Astro.props;
 const { issue, mailto } = relatoLinks(pagina, item, titulo);
 ---
 
