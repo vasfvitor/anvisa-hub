@@ -14,7 +14,14 @@ import {
   PORTAL_URL,
   MANIFEST_URL,
 } from "../lib/config";
-import { coletaParada, feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
+import {
+  coletaParada,
+  comparacaoFila,
+  comparacaoNovidades,
+  feedsMetaForBuild,
+  stampToDate,
+  statNaFila,
+} from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt, fmtMoney, fmtPct } from "../lib/format";
 import { besideManifest, cargaStat, manifestForBuild, tableStat } from "../lib/manifest";
 
@@ -24,6 +31,8 @@ const feeds = await feedsMetaForBuild(FEEDS_META_URL);
 const tables = manifest.tables;
 const cmed = feeds?.cmed;
 const novidades = feeds?.novidades;
+// which collection the day's entries and exits are counted against, when anvisa-feeds says
+const comparacao = novidades ? comparacaoNovidades(novidades) : null;
 // computed when the page is built: a stopped crawl is said, not left for the reader to infer from the date
 const parada = feeds ? coletaParada(feeds, new Date()) : null;
 const altas = cmed?.destaques?.altas.filter((h) => h.variacao !== null && h.variacao > 0) ?? [];
@@ -107,12 +116,16 @@ const structured = [
             {fmtInt(novidades.entraram)} entraram, {fmtInt(novidades.sairam)} saíram,{" "}
             {fmtInt(novidades.filas_com_movimento)} filas
           </p>
+          {comparacao && <p class="resumo">{comparacao}</p>}
           <ul class="mov">
             {novidades.filas.slice(0, 5).map((f) => (
               <li>
                 <span class="t">
                   <a href={f.pagina}>{f.nome}</a>
-                  <small>{f.area}</small>
+                  <small>
+                    {f.area}
+                    {comparacaoFila(f, novidades) && `, ${comparacaoFila(f, novidades)}`}
+                  </small>
                 </span>
                 <span class="n">
                   {f.entraram > 0 && <span class="up">+{f.entraram}</span>}

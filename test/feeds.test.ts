@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { coletaParada, fetchFeedsMeta, parseFeedsMeta, stampToDate, statNaFila } from "../src/lib/feeds";
+import {
+  coletaParada,
+  comparacaoFila,
+  comparacaoNovidades,
+  fetchFeedsMeta,
+  parseFeedsMeta,
+  stampToDate,
+  statNaFila,
+} from "../src/lib/feeds";
 import { fmtInt } from "../src/lib/format";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/meta.json", import.meta.url), "utf-8")) as unknown;
@@ -48,6 +56,43 @@ describe("feeds meta", () => {
     expect(() => parseFeedsMeta(comNovidades({ filas: [{ nome: "x" }] }))).toThrow(/novidades filas/);
     expect(() => parseFeedsMeta(comNovidades({ sairam: undefined }))).toThrow(/bad novidades/);
     expect(parseFeedsMeta({ ...f, novidades: undefined }).novidades).toBeUndefined();
+  });
+  it("reads the base collection of the day's entries and exits, optional, and rejects a bad one", () => {
+    const f = fixture as Record<string, unknown> & { novidades: Record<string, unknown> };
+    const comBase = (base: unknown) => ({ ...f, novidades: { ...f.novidades, base } });
+    expect(parseFeedsMeta(fixture).novidades?.base).toBe("2026-10-07");
+    expect(parseFeedsMeta(comBase(undefined)).novidades?.base).toBeUndefined();
+    expect(() => parseFeedsMeta(comBase(20261007))).toThrow(/bad novidades/);
+    expect(() => parseFeedsMeta(comBase("07/10/2026"))).toThrow(/bad novidades/);
+    expect(() => parseFeedsMeta(comBase("2026-10-08"))).toThrow(/bad novidades/); // not before the day
+  });
+  it("says which collection the entries and exits are compared against, and a gap of more than a day", () => {
+    expect(comparacaoNovidades({ dia: "2026-10-08", base: "2026-10-07" })).toBe(
+      "Entradas e saídas contra a coleta de 07/10/2026.",
+    );
+    expect(comparacaoNovidades({ dia: "2026-11-23", base: "2026-11-20" })).toBe(
+      "Entradas e saídas contra a coleta de 20/11/2026: a comparação cobre 3 dias.",
+    );
+    // across the end of a month
+    expect(comparacaoNovidades({ dia: "2026-03-02", base: "2026-02-27" })).toMatch(/cobre 3 dias/);
+    expect(comparacaoNovidades({ dia: "2026-10-08" })).toBeNull(); // older files: the home keeps its wording
+  });
+  it("reads a subfila's own base collection, optional, and names it only when it differs from the day's", () => {
+    const m = parseFeedsMeta(fixture);
+    const [primeira, segunda] = m.novidades!.filas;
+    expect(primeira?.base).toBeUndefined();
+    expect(segunda?.base).toBe("2026-10-05");
+    expect(comparacaoFila(primeira!, m.novidades!)).toBeNull(); // absent: the day's sentence covers it
+    expect(comparacaoFila({ base: "2026-10-07" }, m.novidades!)).toBeNull(); // the same collection
+    expect(comparacaoFila(segunda!, m.novidades!)).toBe("contra a coleta de 05/10/2026");
+    expect(comparacaoFila(segunda!, {})).toBe("contra a coleta de 05/10/2026"); // the day names none
+    const f = fixture as Record<string, unknown> & { novidades: { filas: Record<string, unknown>[] } };
+    const comBase = (base: unknown) => ({
+      ...f,
+      novidades: { ...f.novidades, filas: [{ ...f.novidades.filas[0], base }] },
+    });
+    expect(() => parseFeedsMeta(comBase("05/10/2026"))).toThrow(/bad novidades filas/);
+    expect(() => parseFeedsMeta(comBase("2026-10-08"))).toThrow(/bad novidades filas/); // not before the day
   });
   it("says a crawl that read no subfila in words, not as 0 na fila", () => {
     const m = parseFeedsMeta(fixture);

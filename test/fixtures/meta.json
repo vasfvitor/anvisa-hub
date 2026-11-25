@@ -76,6 +76,7 @@
   },
   "novidades": {
     "dia": "2026-10-08",
+    "base": "2026-10-07",
     "filas_com_movimento": 41,
     "entraram": 57,
     "sairam": 49,
@@ -98,7 +99,8 @@
         "entraram": 0,
         "sairam": 3,
         "fila": 39,
-        "pagina": "https://anvisa.feeds.abelhaninja.de/fila/167.html"
+        "pagina": "https://anvisa.feeds.abelhaninja.de/fila/167.html",
+        "base": "2026-10-05"
       }
     ]
   }

@@ -1,7 +1,7 @@
 // Contract with `anvisa-feeds`: its build writes `meta.json` at the site root, the latest crawl's meta
 // (same keys as snapshots/<day>.meta.json) plus totals. The file is newer than the hub's first deploy,
 // so a missing file is tolerated: the feeds card then shows the link without numbers.
-import { fmtDateTime, fmtInt } from "./format";
+import { fmtDate, fmtDateTime, fmtInt } from "./format";
 
 export interface FeedsMeta {
   /** crawl day, YYYY-MM-DD */
@@ -35,10 +35,17 @@ export interface Mover {
   /** processes queued today */
   fila: number;
   pagina: string;
+  /**
+   * this subfila's own previous collection, YYYY-MM-DD: earlier than the block's `base` when the crawl failed on it
+   * the day before; absent in older files
+   */
+  base?: string;
 }
 
 export interface Novidades {
   dia: string;
+  /** the collection day the entries and exits are compared against, YYYY-MM-DD; absent before anvisa-feeds wrote it */
+  base?: string;
   filas_com_movimento: number;
   entraram: number;
   sairam: number;
@@ -115,11 +122,17 @@ export function parseFeedsMeta(raw: unknown): FeedsMeta {
     const n = m.novidades as Partial<Novidades> | null;
     if (!isObj(n) || typeof n.dia !== "string" || !numbers(n, ["filas_com_movimento", "entraram", "sairam"]))
       throw new Error("feeds meta: bad novidades");
+    if (n.base !== undefined && !(typeof n.base === "string" && DIA.test(n.base) && n.base < n.dia))
+      throw new Error("feeds meta: bad novidades");
     if (!Array.isArray(n.filas) || !n.filas.every(isMover)) throw new Error("feeds meta: bad novidades filas");
+    const dia = n.dia;
+    if (!n.filas.every((f) => f.base === undefined || (typeof f.base === "string" && DIA.test(f.base) && f.base < dia)))
+      throw new Error("feeds meta: bad novidades filas");
   }
   return { ...m, rows, subfilas_total: total, subfilas_crawled: crawled, parcial: crawled < total } as FeedsMeta;
 }
 
+const DIA = /^\d{4}-\d{2}-\d{2}$/;
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 const numbers = (o: object, keys: string[]): boolean =>
   keys.every((k) => typeof (o as Record<string, unknown>)[k] === "number");
@@ -166,6 +179,25 @@ export function coletaParada(m: Pick<FeedsMeta, "finished">, now: Date): string 
   return horas > PARADA_HORAS
     ? `A coleta das filas está parada: a última terminou em ${fmtDateTime(m.finished)}.`
     : null;
+}
+
+/**
+ * What the day's entries and exits are compared against, or null when anvisa-feeds did not say (older files): the
+ * base collection, and how many days the comparison spans when that collection is not the day before.
+ */
+export function comparacaoNovidades(n: Pick<Novidades, "dia" | "base">): string | null {
+  if (n.base === undefined) return null;
+  const dias = Math.round((Date.parse(n.dia) - Date.parse(n.base)) / 86_400_000);
+  const contra = `Entradas e saídas contra a coleta de ${fmtDate(n.base)}`;
+  return dias > 1 ? `${contra}: a comparação cobre ${fmtInt(dias)} dias.` : `${contra}.`;
+}
+
+/**
+ * The collection one busiest subfila is compared against, when it is not the one the day's sentence names (the crawl
+ * failed on that subfila before): null when it is the same, or when anvisa-feeds did not say.
+ */
+export function comparacaoFila(f: Pick<Mover, "base">, n: Pick<Novidades, "base">): string | null {
+  return f.base !== undefined && f.base !== n.base ? `contra a coleta de ${fmtDate(f.base)}` : null;
 }
 
 /** "20261009" → "2026-10-09", so the formatters treat it as a calendar day. */
