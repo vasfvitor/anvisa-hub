@@ -1,6 +1,8 @@
 ---
 // The home: a search box, the latest changes of each source, four cards. Every number is read at build time from the
 // manifest of anvisa-api and the meta.json of anvisa-feeds; nothing is typed by hand.
+// `data-dado` marks the publisher's own names (subfilas, CMED products, table titles): scripts/check-dist.mjs does not
+// hold ANVISA's wording to the banned-phrase list. Mark the innermost element around the value only.
 import Card from "../components/Card.astro";
 import type { Stat } from "../components/Card.astro";
 import Base from "../layouts/Base.astro";
@@ -121,9 +123,11 @@ const structured = [
             {novidades.filas.slice(0, 5).map((f) => (
               <li>
                 <span class="t">
-                  <a href={f.pagina}>{f.nome}</a>
+                  <a href={f.pagina} data-dado>
+                    {f.nome}
+                  </a>
                   <small>
-                    {f.area}
+                    <span data-dado>{f.area}</span>
                     {comparacaoFila(f, novidades) && `, ${comparacaoFila(f, novidades)}`}
                   </small>
                 </span>
@@ -155,8 +159,14 @@ const structured = [
             {[...altas.slice(0, 3), ...baixas.slice(0, 3)].map((h) => (
               <li>
                 <span class="t">
-                  {h.pagina ? <a href={h.pagina}>{h.produto}</a> : h.produto}
-                  <small>{h.apresentacao}</small>
+                  {h.pagina ? (
+                    <a href={h.pagina} data-dado>
+                      {h.produto}
+                    </a>
+                  ) : (
+                    <span data-dado>{h.produto}</span>
+                  )}
+                  <small data-dado>{h.apresentacao}</small>
                 </span>
                 <span class={`n ${h.variacao! > 0 ? "up" : "down"}`}>
                   {fmtPct(h.variacao!)}
@@ -185,8 +195,10 @@ const structured = [
         {recentes.map(([name, t]) => (
           <li>
             <span class="t">
-              <a href={`${docsUrl}#${name}`}>{name}</a>
-              <small>{t.title ?? ""}</small>
+              <a href={`${docsUrl}#${name}`} data-dado>
+                {name}
+              </a>
+              <small data-dado>{t.title ?? ""}</small>
             </span>
             <span class="n">
               {fmtInt(t.rows)}

@@ -1,5 +1,6 @@
 ---
 // Every table of the manifest: rows, source date, what one row is, the dictionary link.
+// `data-dado` marks the manifest's names and titles for scripts/check-dist.mjs (see index.astro).
 import Base from "../layouts/Base.astro";
 import { DADOS_URL, MANIFEST_URL, PYPI_URL } from "../lib/config";
 import { fmtDate, fmtInt } from "../lib/format";
@@ -52,9 +53,13 @@ const structured = [
       {tables.map(([name, t]) => (
         <tr>
           <td>
-            <a href={`${docsUrl}#${name}`}>{name}</a>
+            <a href={`${docsUrl}#${name}`} data-dado>
+              {name}
+            </a>
           </td>
-          <td class="d">{t.title ?? ""}</td>
+          <td class="d" data-dado>
+            {t.title ?? ""}
+          </td>
           <td class="n">{fmtInt(t.rows)}</td>
           <td class="n">{t.source.loaded_at ? fmtDate(t.source.loaded_at) : "sem data no arquivo"}</td>
         </tr>

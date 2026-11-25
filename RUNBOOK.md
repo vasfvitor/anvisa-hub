@@ -224,6 +224,19 @@ continua no ar**.
 - **O que fazer:** rodar de novo mais tarde.
 - **Pedir ajuda quando:** repetir.
 
+### Frase proibida ou script no site gerado
+
+- **Onde aparece:** passo `pnpm check:dist`, logo depois do Build.
+- **Mensagens:** `<arquivo>: banned phrase "<frase>": …<trecho>…` ou
+  `<arquivo>: <script ...> that is not JSON-LD`, e no fim `N problem(s) in M files`.
+- **O que quer dizer:** o texto do site gerado tem uma frase da lista `frases-proibidas.txt`, ou uma página
+  ganhou JavaScript. A frase veio do código do hub: os nomes que a ANVISA publica (filas, assuntos,
+  produtos da CMED, títulos das tabelas) ficam em elementos marcados com `data-dado` e não são conferidos,
+  então um dado não trava o site. Se o trecho for um nome desses, falta a marca `data-dado` no lugar que o
+  mostra.
+- **O site foi afetado?** Não. O site anterior continua, mas não atualiza.
+- **Agir ou esperar:** pedir ajuda. Na máquina, `pnpm build` e depois `pnpm check:dist` mostram o mesmo.
+
 ### Lint, formato, testes ou tipos
 
 - **Onde aparece:** passos `pnpm format:check`, `pnpm lint`, `pnpm test` ou `pnpm check`.

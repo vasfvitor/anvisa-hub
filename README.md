@@ -42,7 +42,8 @@ summary is optional: when it is missing the feeds card shows the link and a note
 
 `.github/workflows/pages.yml` runs on push, on manual dispatch and on three crons (09:30, 22:30 and 01:30
 UTC). On a cron it first compares the two live files with `/build.json` and only rebuilds when one of them
-moved. The custom domain comes from `public/CNAME` plus the repository's Pages settings.
+moved. After the build, `pnpm check:dist` fails on client JavaScript or on a phrase of `frases-proibidas.txt`
+in the built text. The custom domain comes from `public/CNAME` plus the repository's Pages settings.
 
 ## Development
 
