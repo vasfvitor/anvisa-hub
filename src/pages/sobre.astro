@@ -3,6 +3,7 @@
 // and the same text as FAQPage JSON-LD.
 import Base from "../layouts/Base.astro";
 import {
+  AJUSTE_ANUAL_CMED,
   ANVISA_DADOS_URL,
   CONTEM_URL,
   DADOS_URL,
@@ -45,6 +46,8 @@ const faq = [
     a: `São cópias dos arquivos públicos da ANVISA (dados.anvisa.gov.br e a API Consultas Externas), com a data de cada coleta, feitas por um projeto sem vínculo com a ANVISA. Os valores são os que a ANVISA publica; os CSVs são convertidos para Parquet, e as entradas, saídas e mudanças são calculadas pelo anvisa.feeds.`,
   },
 ];
+const conferida = fmtDate(AJUSTE_ANUAL_CMED.conferido);
+
 const structured = [
   {
     "@type": "BreadcrumbList",
@@ -96,7 +99,10 @@ const structured = [
         medicamentos com a anterior. Um feed por substância e por laboratório. O preço máximo ao consumidor de cada
         apresentação, no ICMS de cada estado, está em <a href={`${PORTAL_URL}remedios/`}>saude.abelhaninja.de</a>.
       </p>
-      <p class="muted">Fora: preço praticado. São tetos. Em março ou abril a lista inteira muda.</p>
+      <p class="muted">
+        Fora: o preço praticado; a lista dá os tetos. Os preços são ajustados uma vez por ano, pela
+        <a href={AJUSTE_ANUAL_CMED.url}>{AJUSTE_ANUAL_CMED.lei}</a> (conferida em {conferida}).
+      </p>
     </section>
 
     <h2>dados abertos</h2>
