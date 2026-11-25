@@ -19,7 +19,8 @@ export const relatoTitle = (item: string, pageTitle: string): string => `Problem
 export function relatoLinks(pagina: string, item: string, pageTitle: string): RelatoLinks {
   const title = relatoTitle(item, pageTitle);
   const q = (pairs: [string, string][]): string => pairs.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
-  const body = `Página: ${pagina}\nItem: ${item}\n\nO que está errado:\n\nO que a fonte oficial mostra (link):\n`;
+  // RFC 6068: a line break in a mailto body is CRLF (%0D%0A); some clients join bare LF lines
+  const body = `Página: ${pagina}\r\nItem: ${item}\r\n\r\nO que está errado:\r\n\r\nO que a fonte oficial mostra (link):\r\n`;
   return {
     issue: `${REPOS.hub}/issues/new?${q([
       ["template", "problema.yml"],

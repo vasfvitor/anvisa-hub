@@ -21,7 +21,8 @@ const { issue, mailto } = relatoLinks(pagina, item, titulo);
 
 {curto ? (
   <p class={className}>
-    Encontrou um erro? <a href={issue}>Relato no GitHub</a> ou <a href={mailto}>{RELATO_EMAIL}</a>.
+    Encontrou um erro? <a href={issue}>Relato no GitHub</a> (público: não inclua dados pessoais) ou{" "}
+    <a href={mailto}>{RELATO_EMAIL}</a>.
   </p>
 ) : (
   <p class={className}>

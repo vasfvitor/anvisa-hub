@@ -34,14 +34,15 @@ describe("relato", () => {
     expect(params(mailto).get("subject")).toBe(`Problema em ${item}`);
   });
 
-  it("writes the e-mail to RELATO_EMAIL with the page and the item in the body, newlines as %0A", () => {
+  it("writes the e-mail to RELATO_EMAIL with the page and the item in the body, line breaks as CRLF (%0D%0A, RFC 6068)", () => {
     const { mailto } = relatoLinks("https://anvisa.abelhaninja.de/", "", "Início");
     expect(RELATO_EMAIL).toBe("ajuda@abelhaninja.de");
     expect(mailto.startsWith(`mailto:${RELATO_EMAIL}?subject=Problema%20em%20In%C3%ADcio&body=`)).toBe(true);
-    expect(mailto).toContain("%0A");
+    expect(mailto).toContain("%0D%0A");
+    expect(mailto).not.toMatch(/(?<!%0D)%0A/);
     expect(mailto).not.toContain("\n");
     expect(params(mailto).get("body")).toBe(
-      "Página: https://anvisa.abelhaninja.de/\nItem: \n\nO que está errado:\n\nO que a fonte oficial mostra (link):\n",
+      "Página: https://anvisa.abelhaninja.de/\r\nItem: \r\n\r\nO que está errado:\r\n\r\nO que a fonte oficial mostra (link):\r\n",
     );
   });
 });
