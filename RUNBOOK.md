@@ -133,7 +133,8 @@ fonte está lenta ou o site cresceu. Ver o RUNBOOK do repo.
 O passo `deploy-pages` deu erro. O site anterior continua no ar.
 
 O hub, o contém, o portal e o `dados` do anvisa-api já tentam o deploy uma segunda vez, dois minutos depois,
-e só uma vez. Um job vermelho aqui quer dizer que as duas tentativas falharam. A falha que motivou isso
+e só uma vez; cada tentativa espera no máximo 4 minutos. Um job vermelho aqui quer dizer que as duas tentativas
+falharam. Um run verde com o primeiro deploy marcado em vermelho não pede nada: a segunda tentativa publicou. A falha que motivou isso
 (24 e 25/11/2026) aparece no log assim, com o artefato enviado no passo anterior:
 `Error: No artifacts named "github-pages" were found for this workflow run.` e depois
 `Fetching artifact metadata failed. Is githubstatus.com reporting issues with API requests, Pages, or Actions? Please re-run the deployment at a later time.`
