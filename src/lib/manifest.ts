@@ -13,6 +13,8 @@ export interface Table {
   title?: string;
   path: string;
   rows: number;
+  /** one entry per column of the Parquet file; only the count is read here */
+  columns?: unknown[];
   source: Source;
 }
 
@@ -69,6 +71,12 @@ export function cargaStat(m: Manifest, names: string[]): { label: string; value:
 export function tableStat(m: Manifest, label: string, name: string): { label: string; value: string } {
   const t = m.tables[name];
   return t ? { label, value: fmtInt(t.rows) } : { label: `${label}: sem dado neste build`, value: "—" };
+}
+
+/** The column count of one table, or null when the table is not in this build or does not list its columns. */
+export function columnCount(m: Manifest, name: string): number | null {
+  const cols = m.tables[name]?.columns;
+  return Array.isArray(cols) && cols.length > 0 ? cols.length : null;
 }
 
 /** Absolute URL of a file published beside the manifest (the Pages index, the data dictionary). */

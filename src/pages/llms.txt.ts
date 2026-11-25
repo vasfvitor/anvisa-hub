@@ -14,7 +14,7 @@ import {
 } from "../lib/config";
 import { coletaParada, feedsMetaForBuild, stampToDate, statNaFila } from "../lib/feeds";
 import { fmtDate, fmtDateTime, fmtInt } from "../lib/format";
-import { besideManifest, manifestForBuild } from "../lib/manifest";
+import { besideManifest, columnCount, manifestForBuild } from "../lib/manifest";
 
 export const GET: APIRoute = async () => {
   const [m, feeds] = await Promise.all([manifestForBuild(MANIFEST_URL), feedsMetaForBuild(FEEDS_META_URL)]);
@@ -33,6 +33,11 @@ export const GET: APIRoute = async () => {
   const cmedLine = feeds?.cmed
     ? `${fmtInt(feeds.cmed.rows)} apresentações de ${fmtInt(feeds.cmed.substancias)} substâncias e ${fmtInt(feeds.cmed.laboratorios)} laboratórios na lista de ${fmtDate(stampToDate(feeds.cmed.stamp))}.`
     : "Ainda sem lista guardada neste build.";
+  // the column count is the manifest's, so it follows the pipeline when a column is added
+  const cmedColunas = columnCount(m, "cmed");
+  const cmedTabela = m.tables.cmed
+    ? ` A tabela completa${cmedColunas ? ` (${fmtInt(cmedColunas)} colunas)` : ""} é o Parquet cmed do anvisa-api abaixo.`
+    : "";
 
   const text = `# ${NAME}
 
@@ -52,7 +57,7 @@ ${FEEDS_URL}: as filas de análise de petições da ANVISA, um feed Atom por sub
 
 ## preços CMED
 
-${FEEDS_URL}cmed/: a lista mensal de preços máximos de medicamentos da CMED (PF, PMC e PMVG por alíquota de ICMS), um feed Atom por substância (${FEEDS_URL}cmed/substancia/<slug>.xml) e por laboratório (${FEEDS_URL}cmed/laboratorio/<cnpj>.xml), mais o geral (${FEEDS_URL}cmed/geral.xml), com o que entrou, saiu e mudou a cada lista; OPML em ${FEEDS_URL}cmed/cmed.opml; cada página também em JSON. ${cmedLine} A tabela completa (102 colunas) é o Parquet cmed do anvisa-api abaixo.
+${FEEDS_URL}cmed/: a lista mensal de preços máximos de medicamentos da CMED (PF, PMC e PMVG por alíquota de ICMS), um feed Atom por substância (${FEEDS_URL}cmed/substancia/<slug>.xml) e por laboratório (${FEEDS_URL}cmed/laboratorio/<cnpj>.xml), mais o geral (${FEEDS_URL}cmed/geral.xml), com o que entrou, saiu e mudou a cada lista; OPML em ${FEEDS_URL}cmed/cmed.opml; cada página também em JSON. ${cmedLine}${cmedTabela}
 
 ## dados abertos (anvisa-api)
 

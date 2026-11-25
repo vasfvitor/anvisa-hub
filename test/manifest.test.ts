@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { besideManifest, cargaStat, parseManifest, tableStat } from "../src/lib/manifest";
+import { besideManifest, cargaStat, columnCount, parseManifest, tableStat } from "../src/lib/manifest";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/manifest.json", import.meta.url), "utf-8")) as unknown;
 const base = fixture as { tables: Record<string, unknown> };
@@ -47,6 +47,14 @@ describe("manifest", () => {
       label: "cosmeticos: sem dado neste build",
       value: "—",
     });
+  });
+  it("counts a table's columns from the manifest, and gives null when it lists none", () => {
+    const { alimentos } = base.tables as Record<string, Record<string, unknown>>;
+    const cols = Array.from({ length: 104 }, (_, i) => ({ name: `c${String(i)}` }));
+    const m = parseManifest({ ...base, tables: { ...base.tables, cmed: { ...alimentos, columns: cols } } });
+    expect(columnCount(m, "cmed")).toBe(104);
+    expect(columnCount(m, "alimentos")).toBeNull(); // the fixture's empty list
+    expect(columnCount(m, "cosmeticos")).toBeNull(); // not in the build
   });
   it("resolves a file beside the manifest", () => {
     expect(besideManifest("https://vasfvitor.github.io/anvisa-api/manifest.json", "dicionario.html")).toBe(
