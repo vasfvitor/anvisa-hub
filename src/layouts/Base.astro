@@ -1,8 +1,9 @@
 ---
 // Page shell: head tags (canonical, Open Graph, Twitter card, JSON-LD), header with the mark and the
-// site nav, footer with the repositories. No client JavaScript anywhere on the site.
+// site nav, footer with the repositories and the links to report a problem. No client JavaScript anywhere on the site.
 // Astro drops a line break between text and a tag: keep inline links on the same line as their text.
 import Logo from "../components/Logo.astro";
+import Relato from "../components/Relato.astro";
 import { ANVISA_CONSULTAS_URL, CONTEM_URL, HOME_URL, REPOS } from "../lib/config";
 import { AUTHOR, DESCRIPTION, DISCLAIMER, NAME, pageTitle } from "../lib/brand";
 
@@ -123,6 +124,9 @@ const graph = {
         <a href={REPOS.hub}>anvisa-hub</a>
         <a href={HOME_URL}>abelhaninja.de</a>
       </nav>
+      {/* the 404 (the only noindex page) is served for any missing path, so its own URL says nothing: the
+      reader fills the page in */}
+      <Relato class="relato" pagina={noindex ? "" : canonical} titulo={title} curto />
       <p class="licenca">
         Código MIT. Valores como a ANVISA e a CMED publicam; CSVs convertidos para Parquet pelo anvisa-api; entradas,
         saídas e mudanças calculadas pelo anvisa.feeds. <a href={AUTHOR.url}>{AUTHOR.name}</a>.
@@ -465,6 +469,7 @@ const graph = {
     gap: 12px;
   }
   footer.site .aviso,
+  footer.site .relato,
   footer.site .licenca {
     margin: 0;
   }

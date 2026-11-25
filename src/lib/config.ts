@@ -27,5 +27,7 @@ export const AJUSTE_ANUAL_CMED = {
   url: "https://www.planalto.gov.br/ccivil_03/leis/2003/l10.742.htm",
   conferido: "2026-11-25",
 } as const;
+// Where a reader reports a wrong value by e-mail; the GitHub issue form is REPOS.hub's problema.yml (src/lib/relato.ts).
+export const RELATO_EMAIL = "ajuda@abelhaninja.de";
 export const ANVISA_CONSULTAS_URL = "https://consultas.anvisa.gov.br/";
 export const ANVISA_DADOS_URL = "https://dados.anvisa.gov.br/dados/";

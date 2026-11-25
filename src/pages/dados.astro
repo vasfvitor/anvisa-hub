@@ -1,6 +1,7 @@
 ---
 // Every table of the manifest: rows, source date, what one row is, the dictionary link.
 // `data-dado` marks the manifest's names and titles for scripts/check-dist.mjs (see index.astro).
+import Relato from "../components/Relato.astro";
 import Base from "../layouts/Base.astro";
 import { DADOS_URL, MANIFEST_URL, PYPI_URL } from "../lib/config";
 import { fmtDate, fmtInt } from "../lib/format";
@@ -66,6 +67,7 @@ const structured = [
       ))}
     </tbody>
   </table>
+  <Relato class="nota" pagina={new URL(Astro.url.pathname, site).href} titulo={title} />
   <h2>Como usar</h2>
   <p class="nota">
     Os arquivos mudam de endereço a cada build; o <a href={MANIFEST_URL}>manifest.json</a> tem os endereços deste build,

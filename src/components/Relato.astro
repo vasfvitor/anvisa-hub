@@ -1,0 +1,31 @@
+---
+// "Encontrou um erro?" with the GitHub issue link and the e-mail link (src/lib/relato.ts). The same wording on
+// the five health sites. `curto` is the footer's form, on every page; the full sentence goes after the data.
+// Astro drops a line break between text and a tag: keep inline links on the same line as their text.
+import { RELATO_EMAIL } from "../lib/config";
+import { relatoLinks } from "../lib/relato";
+
+interface Props {
+  /** the page's canonical absolute URL */
+  pagina: string;
+  /** what the page is about, with its identifier; empty when the page is not about one item */
+  item?: string;
+  /** the page title, used in the issue title when there is no item */
+  titulo: string;
+  curto?: boolean;
+  class?: string;
+}
+const { pagina, item = "", titulo, curto = false, class: className } = Astro.props;
+const { issue, mailto } = relatoLinks(pagina, item, titulo);
+---
+
+{curto ? (
+  <p class={className}>
+    Encontrou um erro? <a href={issue}>Relato no GitHub</a> ou <a href={mailto}>{RELATO_EMAIL}</a>.
+  </p>
+) : (
+  <p class={className}>
+    Encontrou um erro? <a href={issue}>Abra um relato no GitHub</a> (precisa de conta) ou{" "}
+    <a href={mailto}>escreva para {RELATO_EMAIL}</a>. O relato no GitHub é público: não inclua dados pessoais.
+  </p>
+)}
