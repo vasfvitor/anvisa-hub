@@ -41,32 +41,34 @@ const structured = [
     {fmtInt(tables.length)} tabelas, {fmtInt(total)} linhas, build do anvisa-api de {fmtDate(manifest.built_at)}: os
     CSVs da ANVISA convertidos para Parquet, com tipos nas colunas e linhas ordenadas.
   </p>
-  <table class="lista">
-    <thead>
-      <tr>
-        <th>Tabela</th>
-        <th class="d">Uma linha é</th>
-        <th class="n">Linhas</th>
-        <th class="n">Carga da ANVISA</th>
-      </tr>
-    </thead>
-    <tbody>
-      {tables.map(([name, t]) => (
+  <div class="rola">
+    <table class="lista">
+      <thead>
         <tr>
-          <td>
-            <a href={`${docsUrl}#${name}`} data-dado>
-              {name}
-            </a>
-          </td>
-          <td class="d" data-dado>
-            {t.title ?? ""}
-          </td>
-          <td class="n">{fmtInt(t.rows)}</td>
-          <td class="n">{t.source.loaded_at ? fmtDate(t.source.loaded_at) : "sem data no arquivo"}</td>
+          <th>Tabela</th>
+          <th class="d">Uma linha é</th>
+          <th class="n">Linhas</th>
+          <th class="n">Carga da ANVISA</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {tables.map(([name, t]) => (
+          <tr>
+            <td>
+              <a href={`${docsUrl}#${name}`} data-dado>
+                {name}
+              </a>
+            </td>
+            <td class="d" data-dado>
+              {t.title ?? ""}
+            </td>
+            <td class="n">{fmtInt(t.rows)}</td>
+            <td class="n">{t.source.loaded_at ? fmtDate(t.source.loaded_at) : "sem data no arquivo"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
   <Relato class="nota" titulo={title} />
   <h2>Como usar</h2>
   <p class="nota">
